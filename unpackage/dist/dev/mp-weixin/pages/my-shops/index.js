@@ -12,58 +12,28 @@ const _sfc_main = {
       activeTab: "all",
       page: 1,
       pageSize: 10,
-      // 本地 Mock 数据
-      mockAll: [
-        {
-          _id: "1",
-          store_name: "静安旗舰店",
-          store_address: "上海市静安区南京西路1234号",
-          cover_image: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=800",
-          month_revenue: 128500,
-          customer_count: 328,
-          status: "active"
-        },
-        {
-          _id: "2",
-          store_name: "浦东新乐店",
-          store_address: "上海市浦东新区陆家嘴世纪大道88号",
-          cover_image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
-          month_revenue: 98200,
-          customer_count: 256,
-          status: "active"
-        },
-        {
-          _id: "3",
-          store_name: "徐汇体验店",
-          store_address: "上海市徐汇区淮海中路66号",
-          cover_image: "https://images.unsplash.com/photo-1542372147193-a7aca54189cd?q=80&w=800",
-          month_revenue: 85600,
-          customer_count: 198,
-          status: "active"
-        },
-        {
-          _id: "4",
-          store_name: "闵行社区店",
-          store_address: "上海市闵行区漕宝路88号",
-          cover_image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800",
-          month_revenue: 152300,
-          customer_count: 410,
-          status: "active"
-        }
-      ]
+      list: [],
+      loading: false,
+      error: ""
     };
+  },
+  created() {
+    this.service = common_vendor.tr.importObject("curd-shops");
+  },
+  onShow() {
+    this.fetchShops();
   },
   computed: {
     filtered() {
       const kw = (this.keyword || "").trim().toLowerCase();
-      let arr = this.mockAll.slice();
+      let arr = this.list.slice();
       if (this.activeTab === "active") {
         arr = arr.filter(function(s) {
           return s.status === "active";
         });
       } else if (this.activeTab === "high") {
         arr = arr.filter(function(s) {
-          return s.month_revenue >= 1e5;
+          return (s.month_revenue || 0) >= 1e5;
         });
       }
       if (kw) {
@@ -80,6 +50,22 @@ const _sfc_main = {
     }
   },
   methods: {
+    async fetchShops() {
+      this.loading = true;
+      this.error = "";
+      try {
+        const data = await this.service.listMyShops();
+        const list = Array.isArray(data) ? data : data && data.data || [];
+        this.list = list;
+        this.page = 1;
+      } catch (err) {
+        this.list = [];
+        this.error = (err == null ? void 0 : err.errMsg) || (err == null ? void 0 : err.message) || "加载失败";
+        common_vendor.index.showToast({ title: this.error, icon: "none" });
+      } finally {
+        this.loading = false;
+      }
+    },
     switchTab(v) {
       this.activeTab = v;
       this.page = 1;
@@ -94,6 +80,9 @@ const _sfc_main = {
     },
     openDetail(item) {
       common_vendor.index.navigateTo({ url: `/pages/my-shops/detail?id=${item._id}` });
+    },
+    goCreate() {
+      common_vendor.index.navigateTo({ url: "/pages/my-shops/create" });
     },
     formatMoney(n) {
       if (typeof n !== "number")
@@ -125,9 +114,14 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         g: common_vendor.o(($event) => $options.openDetail(item), item._id)
       };
     }),
-    e: $options.visibleList.length === 0
-  }, $options.visibleList.length === 0 ? {} : {}, {
-    f: common_vendor.o((...args) => $options.loadMore && $options.loadMore(...args))
+    e: $data.loading
+  }, $data.loading ? {} : $data.error ? {
+    g: common_vendor.t($data.error)
+  } : $options.visibleList.length === 0 ? {} : {}, {
+    f: $data.error,
+    h: $options.visibleList.length === 0,
+    i: common_vendor.o((...args) => $options.loadMore && $options.loadMore(...args)),
+    j: common_vendor.o((...args) => $options.goCreate && $options.goCreate(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-d02c2fea"]]);

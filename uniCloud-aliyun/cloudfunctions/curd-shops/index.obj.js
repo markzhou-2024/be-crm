@@ -1,6 +1,17 @@
 // 云对象教程: https://uniapp.dcloud.net.cn/uniCloud/cloud-obj
 // jsdoc语法提示教程：https://ask.dcloud.net.cn/docs/#//ask.dcloud.net.cn/article/129
 const uniID = require('uni-id-common')
+const db = uniCloud.database()
+const shopsCollection = db.collection('shops')
+
+function assertAuthed (ctx) {
+	if (!ctx.uid) {
+		throw {
+			errCode: 'AUTH_REQUIRED',
+			errMsg: '请登录后再试'
+		}
+	}
+}
 
 module.exports = {
 	/**
@@ -77,4 +88,99 @@ module.exports = {
 		}
 	}
 	*/
+	async createShop (shop = {}) {
+		assertAuthed(this)
+		const storeName = (shop.store_name || '').trim()
+		const storeAddress = (shop.store_address || '').trim()
+		if (!storeName || !storeAddress) {
+			return {
+				errCode: 'INVALID_PARAM',
+				errMsg: '门店名称与地址为必填项'
+			}
+		}
+		const now = Date.now()
+		const payload = {
+			user_id: this.uid,
+			store_name: storeName,
+			store_address: storeAddress,
+			phone: shop.phone || '',
+			business_hours: shop.business_hours || '10:00 - 22:00',
+			cover_image: shop.cover_image || '',
+			customer_count: Number(shop.customer_count) || 0,
+			month_revenue: Number(shop.month_revenue) || 0,
+			status: shop.status || 'active',
+			create_time: now
+		}
+		const res = await shopsCollection.add(payload)
+		const insertedId = res.id || res.insertId || (Array.isArray(res.insertedIds) ? res.insertedIds[0] : null)
+		return {
+			errCode: 0,
+			data: {
+				_id: insertedId || payload._id,
+				...payload
+			}
+		}
+	},
+	async listMyShops () {
+		assertAuthed(this)
+		const { data } = await shopsCollection.where({
+			user_id: this.uid
+		}).orderBy('create_time', 'desc').get()
+		return data || []
+	},
+	async getShopById (id) {
+		assertAuthed(this)
+		if (!id) {
+			return {
+				errCode: 'INVALID_PARAM',
+				errMsg: '缺少门店ID'
+			}
+		}
+		const { data } = await shopsCollection.where({
+			user_id: this.uid,
+			_id: id
+		}).limit(1).get()
+		return data && data[0] ? data[0] : null
+	},
+	async updateShop (shop = {}) {
+		assertAuthed(this)
+		const id = shop._id || shop.id
+		if (!id) {
+			return {
+				errCode: 'INVALID_PARAM',
+				errMsg: '缺少门店ID'
+			}
+		}
+		const updates = {}
+		const assignIfSet = (field, formatter) => {
+			if (shop[field] !== undefined) {
+				updates[field] = typeof formatter === 'function' ? formatter(shop[field]) : shop[field]
+			}
+		}
+		assignIfSet('store_name', (v) => String(v || '').trim())
+		assignIfSet('store_address', (v) => String(v || '').trim())
+		assignIfSet('phone', (v) => v || '')
+		assignIfSet('business_hours', (v) => v || '10:00 - 22:00')
+		assignIfSet('cover_image', (v) => v || '')
+		assignIfSet('status', (v) => v || 'active')
+		assignIfSet('customer_count', (v) => Number(v) || 0)
+		assignIfSet('month_revenue', (v) => Number(v) || 0)
+		if (Object.prototype.hasOwnProperty.call(updates, 'store_name') && !updates.store_name) {
+			return { errCode: 'INVALID_PARAM', errMsg: '门店名称不能为空' }
+		}
+		if (Object.prototype.hasOwnProperty.call(updates, 'store_address') && !updates.store_address) {
+			return { errCode: 'INVALID_PARAM', errMsg: '门店地址不能为空' }
+		}
+		if (!Object.keys(updates).length) {
+			return { errCode: 0, updated: 0 }
+		}
+		const res = await shopsCollection.where({
+			user_id: this.uid,
+			_id: id
+		}).update(updates)
+		return {
+			errCode: 0,
+			updated: res.updated || res.affectedDocs || 0
+		}
+	}
 }

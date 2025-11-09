@@ -42,7 +42,7 @@
         <view class="info">
           <view class="name-row">
             <text class="name">{{ item.store_name }}</text>
-            <text class="arrow">›</text>
+            <text class="arrow">></text>
           </view>
           <view class="addr-row">
             <text class="addr">📍 {{ item.store_address }}</text>
@@ -62,12 +62,17 @@
         </view>
       </view>
 
-      <view v-if="visibleList.length === 0" class="empty">暂无数据</view>
+      <view v-if="loading" class="loading">加载中...</view>
+      <view v-else-if="error" class="empty">{{ error }}</view>
+      <view v-else-if="visibleList.length === 0" class="empty">暂无数据</view>
     </scroll-view>
+
+    <!-- 右下角新增门店悬浮按钮 -->
+    <view class="fab" @tap="goCreate">＋</view>
   </view>
 </template>
 
-<!-- 重要：不要用 <script setup>，不要 lang="ts" -->
+<!-- 重要：不要用 <script setup>，不加 lang="ts" -->
 <script>
 // @ts-nocheck
 export default {
@@ -82,56 +87,26 @@ export default {
       activeTab: 'all',
       page: 1,
       pageSize: 10,
-      // 本地 Mock 数据
-      mockAll: [
-        {
-          _id: '1',
-          store_name: '静安旗舰店',
-          store_address: '上海市静安区南京西路1234号',
-          cover_image: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=800',
-          month_revenue: 128500,
-          customer_count: 328,
-          status: 'active'
-        },
-        {
-          _id: '2',
-          store_name: '浦东新乐店',
-          store_address: '上海市浦东新区陆家嘴世纪大道88号',
-          cover_image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800',
-          month_revenue: 98200,
-          customer_count: 256,
-          status: 'active'
-        },
-        {
-          _id: '3',
-          store_name: '徐汇体验店',
-          store_address: '上海市徐汇区淮海中路66号',
-          cover_image: 'https://images.unsplash.com/photo-1542372147193-a7aca54189cd?q=80&w=800',
-          month_revenue: 85600,
-          customer_count: 198,
-          status: 'active'
-        },
-        {
-          _id: '4',
-          store_name: '闵行社区店',
-          store_address: '上海市闵行区漕宝路88号',
-          cover_image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800',
-          month_revenue: 152300,
-          customer_count: 410,
-          status: 'active'
-        }
-      ]
+      list: [],
+      loading: false,
+      error: ''
     }
+  },
+  created() {
+    this.service = uniCloud.importObject('curd-shops')
+  },
+  onShow() {
+    this.fetchShops()
   },
   computed: {
     filtered() {
       const kw = (this.keyword || '').trim().toLowerCase()
-      let arr = this.mockAll.slice()
+      let arr = this.list.slice()
 
       if (this.activeTab === 'active') {
         arr = arr.filter(function (s) { return s.status === 'active' })
       } else if (this.activeTab === 'high') {
-        arr = arr.filter(function (s) { return s.month_revenue >= 100000 })
+        arr = arr.filter(function (s) { return (s.month_revenue || 0) >= 100000 })
       }
 
       if (kw) {
@@ -148,6 +123,22 @@ export default {
     }
   },
   methods: {
+    async fetchShops() {
+      this.loading = true
+      this.error = ''
+      try {
+        const data = await this.service.listMyShops()
+        const list = Array.isArray(data) ? data : (data && data.data) || []
+        this.list = list
+        this.page = 1
+      } catch (err) {
+        this.list = []
+        this.error = err?.errMsg || err?.message || '加载失败'
+        uni.showToast({ title: this.error, icon: 'none' })
+      } finally {
+        this.loading = false
+      }
+    },
     switchTab(v) {
       this.activeTab = v
       this.page = 1
@@ -162,6 +153,9 @@ export default {
     },
     openDetail(item) {
       uni.navigateTo({ url: `/pages/my-shops/detail?id=${item._id}` })
+    },
+    goCreate() {
+      uni.navigateTo({ url: '/pages/my-shops/create' })
     },
     formatMoney(n) {
       if (typeof n !== 'number') return n
@@ -186,12 +180,16 @@ export default {
 .info { flex:1; min-width:0; }
 .name-row { display:flex; align-items:center; justify-content:space-between; }
 .name { font-size:16px; font-weight:600; color:#222; max-width:80%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.arrow { font-size:22px; line-height:1; color:#b8b8b8; }
+.arrow { font-size:18px; line-height:1; color:#b8b8b8; }
 .addr-row { margin-top:4px; }
 .addr { font-size:12px; color:#8a8a8a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .stat-row { margin-top:8px; display:flex; gap:14px; }
 .stat .symbol { font-size:12px; color:#b08a47; margin-right:2px; }
 .stat .value { font-size:14px; font-weight:600; color:#333; margin-right:4px; }
 .stat .label { font-size:12px; color:#8a8a8a; }
+.loading { text-align:center; color:#777; padding:16px 0; }
 .empty { text-align:center; color:#999; padding:24px 0 64px; }
+
+/* 悬浮新增按钮 */
+.fab { position: fixed; right: 16px; bottom: 88px; width: 52px; height: 52px; border-radius: 26px; background: #caa265; color: #fff; font-size: 28px; display:flex; align-items:center; justify-content:center; box-shadow: 0 8px 16px rgba(0,0,0,.15); z-index: 10; }
 </style>

@@ -17,7 +17,9 @@
     "uni_modules/uni-id-pages/pages/userinfo/change_pwd/change_pwd",
     "uni_modules/uni-id-pages/pages/userinfo/set-pwd/set-pwd",
     "uni_modules/uni-id-pages/pages/userinfo/realname-verify/realname-verify",
-    "pages/my-shops/detail"
+    "pages/my-shops/detail",
+    "pages/my-shops/create",
+    "pages/my-shops/edit"
   ],
   "window": {
     "navigationBarTextStyle": "black",

@@ -1,5 +1,6 @@
 <template>
   <view class="page">
+    <view class="edit-btn" @tap="goEdit">编辑</view>
     <view class="nav-gap"></view>
 
     <!-- 顶部大图 -->
@@ -36,7 +37,7 @@
       </view>
     </view>
 
-    <!-- 近7日客流趋势（占位） -->
+    <!-- 近7日客流趋势 -->
     <view class="card">
       <view class="section-title">近7日客流趋势</view>
       <view class="chart-placeholder"><text>（图表占位）</text></view>
@@ -62,57 +63,48 @@ export default {
         cover_image: '',
         month_revenue: 0,
         customer_count: 0,
-        phone: '021-6288-8888',
-        business_hours: '10:00 - 22:00'
-      },
-      // 本地 Mock（字段与列表页一致）
-      mockAll: [
-        {
-          _id: '1',
-          store_name: '静安旗舰店',
-          store_address: '上海市静安区南京西路1234号',
-          cover_image: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?q=80&w=800',
-          month_revenue: 128500,
-          customer_count: 328,
-          phone: '021-6288-8888',
-          business_hours: '10:00 - 22:00'
-        },
-        {
-          _id: '2',
-          store_name: '浦东新乐店',
-          store_address: '上海市浦东新区陆家嘴世纪大道88号',
-          cover_image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800',
-          month_revenue: 98200,
-          customer_count: 256,
-          phone: '021-6666-8888',
-          business_hours: '10:00 - 22:00'
-        },
-        {
-          _id: '3',
-          store_name: '徐汇体验店',
-          store_address: '上海市徐汇区淮海中路66号',
-          cover_image: 'https://images.unsplash.com/photo-1542372147193-a7aca54189cd?q=80&w=800',
-          month_revenue: 85600,
-          customer_count: 198,
-          phone: '021-6666-9999',
-          business_hours: '10:00 - 22:00'
-        }
-      ]
+        phone: '',
+        business_hours: '10:00 - 22:00',
+        status: 'active'
+      }
     }
+  },
+  created() {
+    this.service = uniCloud.importObject('curd-shops')
   },
   onLoad(query) {
     this.id = (query && query.id) || ''
-    const hit = this.mockAll.find(s => s._id === this.id)
-    if (hit) {
-      this.shop = hit
-      uni.setNavigationBarTitle({ title: '门店详情' })
-    } else {
-      uni.showToast({ title: '未找到门店信息', icon: 'none' })
+    uni.setNavigationBarTitle({ title: '门店详情' })
+    if (!this.id) {
+      uni.showToast({ title: '缺少门店ID', icon: 'none' })
+      return
+    }
+    this.fetchShop()
+  },
+  onShow() {
+    if (this.id) {
+      this.fetchShop()
     }
   },
   methods: {
+    async fetchShop() {
+      try {
+        const data = await this.service.getShopById(this.id)
+        if (data) {
+          this.shop = data
+          if (data.store_name) {
+            uni.setNavigationBarTitle({ title: data.store_name })
+          }
+        } else {
+          uni.showToast({ title: '未找到门店信息', icon: 'none' })
+        }
+      } catch (err) {
+        uni.showToast({ title: err?.errMsg || err?.message || '加载失败', icon: 'none' })
+      }
+    },
     addCustomer() { uni.showToast({ title: '添加客户（待接后端）', icon: 'none' }) },
-    openCalendar() { uni.showToast({ title: '预约日历（待接后端）', icon: 'none' }) }
+    openCalendar() { uni.showToast({ title: '预约日历（待接后端）', icon: 'none' }) },
+    goEdit() { uni.navigateTo({ url: `/pages/my-shops/edit?id=${this.id}` }) }
   }
 }
 </script>
@@ -135,4 +127,5 @@ export default {
 .btn { height:44px; border-radius:12px; font-size:16px; }
 .primary { background:#caa265; color:#fff; }
 .ghost { background:#fff; color:#333; border:1px solid #eee; }
+.edit-btn { position: fixed; right: 16px; top: 8px; color:#caa265; padding:8px 12px; z-index: 11; }
 </style>

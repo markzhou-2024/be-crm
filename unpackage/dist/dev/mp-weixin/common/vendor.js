@@ -8353,6 +8353,18 @@ const pages = [
     style: {
       navigationBarTitleText: "门店详情"
     }
+  },
+  {
+    path: "pages/my-shops/create",
+    style: {
+      navigationBarTitleText: "新增门店"
+    }
+  },
+  {
+    path: "pages/my-shops/edit",
+    style: {
+      navigationBarTitleText: "编辑门店"
+    }
   }
 ];
 const globalStyle = {

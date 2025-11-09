@@ -33,3 +33,5 @@
 }
 .ghost.data-v-533450a3 { background:#fff; color:#333; border:1px solid #eee;
 }
+.edit-btn.data-v-533450a3 { position: fixed; right: 16px; top: 8px; color:#caa265; padding:8px 12px; z-index: 11;
+}

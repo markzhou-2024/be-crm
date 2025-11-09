@@ -21,6 +21,8 @@ if (!Math) {
   "./uni_modules/uni-id-pages/pages/userinfo/set-pwd/set-pwd.js";
   "./uni_modules/uni-id-pages/pages/userinfo/realname-verify/realname-verify.js";
   "./pages/my-shops/detail.js";
+  "./pages/my-shops/create.js";
+  "./pages/my-shops/edit.js";
 }
 const _sfc_main = {
   onLaunch: async function() {

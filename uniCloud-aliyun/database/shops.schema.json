@@ -1,7 +1,13 @@
 // 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
 {
 	"bsonType": "object",
-	"required": [],
+	"required": [
+		"user_id",
+		"store_name",
+		"store_address",
+		"status",
+		"create_time"
+	],
 	"permission": {
 		"read": false,
 		"create": false,
@@ -10,7 +16,51 @@
 	},
 	"properties": {
 		"_id": {
-			"description": "ID，系统自动生成"
+			"description": "auto id"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "owner uid"
+		},
+		"store_name": {
+			"bsonType": "string",
+			"description": "shop name"
+		},
+		"store_address": {
+			"bsonType": "string",
+			"description": "shop address"
+		},
+		"phone": {
+			"bsonType": "string",
+			"description": "contact phone"
+		},
+		"business_hours": {
+			"bsonType": "string",
+			"description": "business hours"
+		},
+		"cover_image": {
+			"bsonType": "string",
+			"description": "cover image url"
+		},
+		"customer_count": {
+			"bsonType": "int",
+			"description": "customer count"
+		},
+		"month_revenue": {
+			"bsonType": "int",
+			"description": "last month revenue"
+		},
+		"status": {
+			"bsonType": "string",
+			"enum": [
+				"active",
+				"closed"
+			],
+			"description": "shop status"
+		},
+		"create_time": {
+			"bsonType": "long",
+			"description": "timestamp ms"
 		}
 	}
 }
