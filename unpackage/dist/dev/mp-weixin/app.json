@@ -1,0 +1,61 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/my-customers/index",
+    "pages/my-shops/index",
+    "uni_modules/uni-id-pages/pages/userinfo/deactivate/deactivate",
+    "uni_modules/uni-id-pages/pages/userinfo/userinfo",
+    "uni_modules/uni-id-pages/pages/userinfo/bind-mobile/bind-mobile",
+    "uni_modules/uni-id-pages/pages/login/login-withoutpwd",
+    "uni_modules/uni-id-pages/pages/login/login-withpwd",
+    "uni_modules/uni-id-pages/pages/login/login-smscode",
+    "uni_modules/uni-id-pages/pages/register/register",
+    "uni_modules/uni-id-pages/pages/register/register-by-email",
+    "uni_modules/uni-id-pages/pages/retrieve/retrieve",
+    "uni_modules/uni-id-pages/pages/retrieve/retrieve-by-email",
+    "uni_modules/uni-id-pages/pages/common/webview/webview",
+    "uni_modules/uni-id-pages/pages/userinfo/change_pwd/change_pwd",
+    "uni_modules/uni-id-pages/pages/userinfo/set-pwd/set-pwd",
+    "uni_modules/uni-id-pages/pages/userinfo/realname-verify/realname-verify"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "be-crm",
+    "navigationBarBackgroundColor": "#FFF",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "主页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/my-customers/index",
+        "text": "我的客户",
+        "iconPath": "static/tabbar/customers.png",
+        "selectedIconPath": "static/tabbar/customers-active.png"
+      },
+      {
+        "pagePath": "pages/my-shops/index",
+        "text": "负责的店",
+        "iconPath": "static/tabbar/shops.png",
+        "selectedIconPath": "static/tabbar/shops-active.png"
+      },
+      {
+        "pagePath": "uni_modules/uni-id-pages/pages/userinfo/userinfo",
+        "text": "我的",
+        "iconPath": "static/tabbar/mine.png",
+        "selectedIconPath": "static/tabbar/mine-active.png"
+      }
+    ]
+  },
+  "usingComponents": {}
+}
