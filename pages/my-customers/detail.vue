@@ -72,7 +72,10 @@
         <button class="btn primary" @tap="saveNotes">保存备注</button>
       </view>
 
-      <button class="btn danger ghost" @tap="confirmDelete">删除客户</button>
+      <view class="cta-buttons">
+        <button class="btn ghost" @tap="goPurchase">购买</button>
+        <button class="btn danger ghost" @tap="confirmDelete">删除客户</button>
+      </view>
     </scroll-view>
   </view>
 </template>
@@ -169,6 +172,22 @@ export default {
       } catch (err) {
         uni.showToast({ title: err?.errMsg || err?.message || '删除失败', icon: 'none' })
       }
+    },
+    goPurchase() {
+      uni.navigateTo({
+        url: '/pages/purchases/create',
+        events: {
+          purchaseCreated: payload => {
+            uni.showToast({ title: `已记录购买：${payload.package_name}`, icon: 'success' })
+          }
+        },
+        success: res => {
+          res.eventChannel.emit('initCustomerInfo', {
+            customerId: this.id,
+            customerName: this.customer.name
+          })
+        }
+      })
     },
     toAmount(n) {
       try {

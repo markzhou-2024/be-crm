@@ -5,6 +5,7 @@
     "pages/my-customers/detail",
     "pages/my-customers/create",
     "pages/my-customers/edit",
+    "pages/purchases/create",
     "pages/my-shops/index",
     "uni_modules/uni-id-pages/pages/userinfo/deactivate/deactivate",
     "uni_modules/uni-id-pages/pages/userinfo/userinfo",

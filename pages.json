@@ -31,6 +31,12 @@
 			}
 		},
 		{
+			"path": "pages/purchases/create",
+			"style": {
+				"navigationBarTitleText": "新增购买"
+			}
+		},
+		{
 			"path": "pages/my-shops/index",
 			"style": {
 				"navigationBarTitleText": "负责的店"
