@@ -1,45 +1,44 @@
 
-.page.data-v-1cbe8718 { min-height: 100vh; background: #f6f7f9; padding: 16px 16px 0; box-sizing: border-box;
+.page.data-v-d02c2fea { min-height: 100vh; background: #f6f7f9; padding: 16px 16px 0; box-sizing: border-box;
 }
-.page-header.data-v-1cbe8718 { padding-top: 8px; padding-bottom: 8px;
+.page-header.data-v-d02c2fea { padding-top: 8px; padding-bottom: 8px;
 }
-.title.data-v-1cbe8718 { font-size: 20px; font-weight: 600; color: #222;
+.title.data-v-d02c2fea { font-size: 20px; font-weight: 600; color: #222;
 }
-.search-bar.data-v-1cbe8718 { margin: 8px 0;
+.search-bar.data-v-d02c2fea { margin: 8px 0;
 }
-.search-input.data-v-1cbe8718 { width:100%; height:40px; background:#fff; border-radius:12px; padding:0 14px; box-sizing:border-box; font-size:14px; color:#333; box-shadow:0 1px 2px rgba(0,0,0,0.04);}
-.tabs.data-v-1cbe8718 { display:flex; gap:10px; margin:10px 0 12px;
+.search-input.data-v-d02c2fea { width:100%; height:40px; background:#fff; border-radius:12px; padding:0 14px; box-sizing:border-box; font-size:14px; color:#333; box-shadow:0 1px 2px rgba(0,0,0,0.04);}
+.tabs.data-v-d02c2fea { display:flex; gap:10px; margin:10px 0 12px;
 }
-.tab.data-v-1cbe8718 { padding: 8px 14px; border-radius: 20px; background:#fff; font-size:14px; color:#6c6c6c; box-shadow:0 1px 2px rgba(0,0,0,0.04);
+.tab.data-v-d02c2fea { padding: 8px 14px; border-radius: 20px; background:#fff; font-size:14px; color:#6c6c6c; box-shadow:0 1px 2px rgba(0,0,0,0.04);
 }
-.tab.active.data-v-1cbe8718 { background:#e8d7be; color:#5a3e16; font-weight:600;
+.tab.active.data-v-d02c2fea { background:#e8d7be; color:#5a3e16; font-weight:600;
 }
-.list.data-v-1cbe8718 { height: calc(100vh - 160px);
+.list.data-v-d02c2fea { height: calc(100vh - 160px);
 }
-.card.data-v-1cbe8718 { display:flex; gap:12px; background:#fff; border-radius:16px; padding:12px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.04);
+.card.data-v-d02c2fea { display:flex; gap:12px; background:#fff; border-radius:16px; padding:12px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.04);
 }
-.cover.data-v-1cbe8718 { width:84px; height:84px; border-radius:12px; background:#f2f2f2;
+.cover.data-v-d02c2fea { width:84px; height:84px; border-radius:12px; background:#f2f2f2;
 }
-.info.data-v-1cbe8718 { flex:1; min-width:0;
+.info.data-v-d02c2fea { flex:1; min-width:0;
 }
-.name-row.data-v-1cbe8718 { display:flex; align-items:center; justify-content:space-between;
+.name-row.data-v-d02c2fea { display:flex; align-items:center; justify-content:space-between;
 }
-.name.data-v-1cbe8718 { font-size:16px; font-weight:600; color:#222; max-width:80%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+.name.data-v-d02c2fea { font-size:16px; font-weight:600; color:#222; max-width:80%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.arrow.data-v-1cbe8718 { font-size:22px; line-height:1; color:#b8b8b8;
+.arrow.data-v-d02c2fea { font-size:22px; line-height:1; color:#b8b8b8;
 }
-.addr-row.data-v-1cbe8718 { margin-top:4px;
+.addr-row.data-v-d02c2fea { margin-top:4px;
 }
-.addr.data-v-1cbe8718 { font-size:12px; color:#8a8a8a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+.addr.data-v-d02c2fea { font-size:12px; color:#8a8a8a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.stat-row.data-v-1cbe8718 { margin-top:8px; display:flex; gap:14px;
+.stat-row.data-v-d02c2fea { margin-top:8px; display:flex; gap:14px;
 }
-.stat .symbol.data-v-1cbe8718 { font-size:12px; color:#b08a47; margin-right:2px;
+.stat .symbol.data-v-d02c2fea { font-size:12px; color:#b08a47; margin-right:2px;
 }
-.stat .value.data-v-1cbe8718 { font-size:14px; font-weight:600; color:#333; margin-right:4px;
+.stat .value.data-v-d02c2fea { font-size:14px; font-weight:600; color:#333; margin-right:4px;
 }
-.stat .label.data-v-1cbe8718 { font-size:12px; color:#8a8a8a;
+.stat .label.data-v-d02c2fea { font-size:12px; color:#8a8a8a;
 }
-.empty.data-v-1cbe8718 { text-align:center; color:#999; padding:24px 0 64px;
+.empty.data-v-d02c2fea { text-align:center; color:#999; padding:24px 0 64px;
 }
-

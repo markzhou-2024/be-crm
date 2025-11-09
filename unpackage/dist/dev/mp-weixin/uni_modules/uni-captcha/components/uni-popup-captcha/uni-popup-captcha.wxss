@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /**
  * 这里是uni-app内置的常用样式变量
  *
@@ -24,11 +23,11 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
-view.data-v-aac61fb2 {
+view.data-v-d021b99b {
   display: flex;
   flex-direction: column;
 }
-.popup-captcha.data-v-aac61fb2 {
+.popup-captcha.data-v-d021b99b {
   display: flex;
   max-width: 600px;
   width: 600rpx;
@@ -38,10 +37,10 @@ view.data-v-aac61fb2 {
   flex-direction: column;
   position: relative;
 }
-.popup-captcha .content.data-v-aac61fb2 {
+.popup-captcha .content.data-v-d021b99b {
   padding: 1.3em 0.8em;
 }
-.popup-captcha .title.data-v-aac61fb2 {
+.popup-captcha .title.data-v-d021b99b {
   text-align: center;
   word-wrap: break-word;
   word-break: break-all;
@@ -53,23 +52,23 @@ view.data-v-aac61fb2 {
   color: #111;
   margin-bottom: 15px;
 }
-.button-box.data-v-aac61fb2 {
+.button-box.data-v-d021b99b {
   height: 44px;
   border-top: solid 1px #eee;
   flex-direction: row;
   align-items: center;
   justify-content: space-around;
 }
-.button-box.data-v-aac61fb2, .btn.data-v-aac61fb2 {
+.button-box.data-v-d021b99b, .btn.data-v-d021b99b {
   height: 44px;
   line-height: 44px;
 }
-.button-box .btn.data-v-aac61fb2 {
+.button-box .btn.data-v-d021b99b {
   flex: 1;
   margin: 1px;
   text-align: center;
 }
-.button-box .confirm.data-v-aac61fb2 {
+.button-box .confirm.data-v-d021b99b {
   color: #007aff;
   border-left: solid 1px #eee;
 }

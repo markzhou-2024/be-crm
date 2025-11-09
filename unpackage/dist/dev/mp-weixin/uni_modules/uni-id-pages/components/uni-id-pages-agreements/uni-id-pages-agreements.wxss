@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /**
  * 这里是uni-app内置的常用样式变量
  *
@@ -24,44 +23,44 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
-view.data-v-6abcbb91 {
+view.data-v-40b82fe9 {
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
 }
-.root.data-v-6abcbb91 {
+.root.data-v-40b82fe9 {
   flex-direction: row;
   align-items: center;
   font-size: 12px;
   color: #8a8f8b;
 }
-.checkbox-box.data-v-6abcbb91, .uni-label-pointer.data-v-6abcbb91 {
+.checkbox-box.data-v-40b82fe9, .uni-label-pointer.data-v-40b82fe9 {
   align-items: center;
   display: flex;
   flex-direction: row;
 }
-.item.data-v-6abcbb91 {
+.item.data-v-40b82fe9 {
   flex-direction: row;
 }
-.text.data-v-6abcbb91 {
+.text.data-v-40b82fe9 {
   line-height: 26px;
 }
-.agreement.data-v-6abcbb91 {
+.agreement.data-v-40b82fe9 {
   color: #04498c;
   cursor: pointer;
 }
-.checkbox-box.data-v-6abcbb91  .uni-checkbox-input {
+.checkbox-box.data-v-40b82fe9 .uni-checkbox-input {
   border-radius: 100%;
 }
-.checkbox-box.data-v-6abcbb91  .uni-checkbox-input.uni-checkbox-input-checked {
+.checkbox-box.data-v-40b82fe9 .uni-checkbox-input.uni-checkbox-input-checked {
   border-color: #007aff;
   color: #FFFFFF !important;
   background-color: #007aff;
 }
-.content.data-v-6abcbb91 {
+.content.data-v-40b82fe9 {
   flex-wrap: wrap;
   flex-direction: row;
 }
-.root.data-v-6abcbb91  .uni-popup__error {
+.root.data-v-40b82fe9 .uni-popup__error {
   color: #333333;
 }

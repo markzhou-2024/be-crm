@@ -1,41 +1,41 @@
-<!-- 用户资料页 -->
+<!-- 用户资料 -->
 <template>
-	<view class="uni-content">
-		<view class="avatar">
-			<uni-id-pages-avatar width="260rpx" height="260rpx"></uni-id-pages-avatar>
-		</view>
-		<uni-list>
-			<uni-list-item class="item" @click="setNickname('')" title="昵称" :rightText="userInfo.nickname||'未设置'" link>
-			</uni-list-item>
-			<uni-list-item class="item" @click="bindMobile" title="手机号" :rightText="userInfo.mobile||'未绑定'" link>
-			</uni-list-item>
-			<uni-list-item v-if="userInfo.email" class="item" title="电子邮箱" :rightText="userInfo.email">
-			</uni-list-item>
-			<!-- #ifdef APP -->
+  <view class="uni-content">
+    <view class="avatar">
+      <uni-id-pages-avatar width="260rpx" height="260rpx"></uni-id-pages-avatar>
+    </view>
+    <uni-list>
+      <uni-list-item class="item" @click="setNickname('')" title="昵称" :rightText="userInfo.nickname||'未设置'" link>
+      </uni-list-item>
+      <uni-list-item class="item" @click="bindMobile" title="手机号" :rightText="userInfo.mobile||'未绑定'" link>
+      </uni-list-item>
+      <uni-list-item v-if="userInfo.email" class="item" title="电子邮箱" :rightText="userInfo.email">
+      </uni-list-item>
+      <!-- #ifdef APP -->
       <!-- 如未开通实人认证服务，可以将实名认证入口注释 -->
-			<uni-list-item class="item" @click="realNameVerify" title="实名认证" :rightText="realNameStatus !== 2 ? '未认证': '已认证'" link>
-			</uni-list-item>
-			<!-- #endif -->
-			<uni-list-item v-if="hasPwd" class="item" @click="changePassword" title="修改密码" link>
-			</uni-list-item>
-		</uni-list>
-		<!-- #ifndef MP -->
-		<uni-list class="mt10">
-			<uni-list-item @click="deactivate" title="注销账号" link="navigateTo"></uni-list-item>
-		</uni-list>
-		<!-- #endif -->
-		<uni-popup ref="dialog" type="dialog">
-			<uni-popup-dialog mode="input" :value="userInfo.nickname" @confirm="setNickname" :inputType="setNicknameIng?'nickname':'text'"
-				title="设置昵称" placeholder="请输入要设置的昵称">
-			</uni-popup-dialog>
-		</uni-popup>
-		<uni-id-pages-bind-mobile ref="bind-mobile-by-sms" @success="bindMobileSuccess"></uni-id-pages-bind-mobile>
-		<template v-if="showLoginManage">
-			<button v-if="userInfo._id" @click="logout">退出登录</button>
-			<button v-else @click="login">去登录</button>
-		</template>
-	</view>
-</template>
+      <uni-list-item class="item" @click="realNameVerify" title="实名认证" :rightText="realNameStatus !== 2 ? '未认证' : '已认证'" link>
+      </uni-list-item>
+      <!-- #endif -->
+      <uni-list-item v-if="hasPwd" class="item" @click="changePassword" title="修改密码" link>
+      </uni-list-item>
+    </uni-list>
+    <!-- #ifndef MP -->
+    <uni-list class="mt10">
+      <uni-list-item @click="deactivate" title="注销账号" link="navigateTo"></uni-list-item>
+    </uni-list>
+    <!-- #endif -->
+    <uni-popup ref="dialog" type="dialog">
+      <uni-popup-dialog mode="input" :value="userInfo.nickname" @confirm="setNickname" :inputType="setNicknameIng?'nickname':'text'"
+        title="设置昵称" placeholder="请输入要设置的昵称">
+      </uni-popup-dialog>
+    </uni-popup>
+    <uni-id-pages-bind-mobile ref="bind-mobile-by-sms" @success="bindMobileSuccess"></uni-id-pages-bind-mobile>
+    <view class="login-actions">
+      <button v-if="userInfo._id" @click="logout">退出登录</button>
+      <button v-else @click="login">去登录</button>
+    </view>
+  </view>
+  </template>
 <script>
 const uniIdCo = uniCloud.importObject("uni-id-co")
   import {
@@ -70,7 +70,6 @@ const uniIdCo = uniCloud.importObject("uni-id-co")
 				// 	nickname:''
 				// },
 				hasPwd: false,
-				showLoginManage: false ,//通过页面传参隐藏登录&退出登录按钮
 				setNicknameIng:false
 			}
 		},
@@ -79,10 +78,7 @@ const uniIdCo = uniCloud.importObject("uni-id-co")
 			this.univerifyStyle.otherLoginButton.title = "其他号码绑定"
 		},
 		async onLoad(e) {
-			if (e.showLoginManage) {
-				this.showLoginManage = true //通过页面传参隐藏登录&退出登录按钮
-			}
-			//判断当前用户是否有密码，否则就不显示密码修改功能
+			// 判断当前用户是否有密码，否则就不显示密码修改功能
 			let res = await uniIdCo.getAccountInfo()
 			this.hasPwd = res.isPasswordSet
 		},
@@ -113,7 +109,7 @@ const uniIdCo = uniCloud.importObject("uni-id-co")
 				// #ifdef APP-PLUS
 				uni.preLogin({
 					provider: 'univerify',
-					success: this.univerify(), //预登录成功
+					success: this.univerify(), // 预登录成功
 					fail: (res) => { // 预登录失败
 						// 不显示一键登录选项（或置灰）
 						console.log(res)

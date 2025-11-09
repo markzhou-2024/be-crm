@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /**
  * 这里是uni-app内置的常用样式变量
  *
@@ -24,11 +23,11 @@
 /* 垂直间距 */
 /* 透明度 */
 /* 文章场景相关 */
-.box.data-v-311d2b6f {
+.box.data-v-4b649130 {
   position: relative;
   margin-top: 10px;
 }
-.short-code-btn.data-v-311d2b6f {
+.short-code-btn.data-v-4b649130 {
   padding: 0;
   position: absolute;
   top: 0;
@@ -40,26 +39,26 @@
   justify-content: center;
   align-items: center;
 }
-.inner-text.data-v-311d2b6f {
+.inner-text.data-v-4b649130 {
   font-size: 14px;
   color: #AAAAAA;
 }
-.inner-text-active.data-v-311d2b6f {
+.inner-text-active.data-v-4b649130 {
   color: #04498c;
 }
-.captcha.data-v-311d2b6f {
+.captcha.data-v-4b649130 {
   width: 350rpx;
 }
-.input-box.data-v-311d2b6f {
+.input-box.data-v-4b649130 {
   margin: 0;
   padding: 4px;
   background-color: #F8F8F8;
   font-size: 14px;
 }
-.box.data-v-311d2b6f  .content-clear-icon {
+.box.data-v-4b649130 .content-clear-icon {
   margin-right: 110px;
 }
-.box.data-v-311d2b6f {
+.box.data-v-4b649130 {
   display: flex;
   flex-direction: row;
 }

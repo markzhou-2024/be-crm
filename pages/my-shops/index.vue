@@ -161,8 +161,7 @@ export default {
       }
     },
     openDetail(item) {
-      uni.showToast({ title: '详情页开发中', icon: 'none' })
-      // 之后接：uni.navigateTo({ url: `/pages/my-shops/shop-detail?id=${item._id}` })
+      uni.navigateTo({ url: `/pages/my-shops/detail?id=${item._id}` })
     },
     formatMoney(n) {
       if (typeof n !== 'number') return n

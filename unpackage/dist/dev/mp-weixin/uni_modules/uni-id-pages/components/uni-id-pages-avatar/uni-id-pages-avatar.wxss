@@ -1,20 +1,19 @@
 
 .box{
-	overflow: hidden;
+		overflow: hidden;
 }
 .box{
-	padding: 0;
+		padding: 0;
 }
 .chooseAvatar {
 
-	display: inline-block;
-	box-sizing: border-box;
+		display: inline-block;
+		box-sizing: border-box;
 
-	border-radius: 10px;
-	text-align: center;
-	padding: 1px;
+		border-radius: 10px;
+		text-align: center;
+		padding: 1px;
 }
 .showBorder{
-	border: solid 1px #ddd;
+		border: solid 1px #ddd;
 }
-

@@ -119,6 +119,10 @@
 				"navigationBarTitleText": "实名认证",
 				"enablePullDownRefresh": false
 			}
+		},
+		{
+			"path": "pages/my-shops/detail",
+			"style": { "navigationBarTitleText": "门店详情" }
 		}
 	],
 	"globalStyle": {

@@ -1,1 +1,1 @@
-<view data-event-opts="{{[['tap',[['onClick',['$event']]]]]}}" style="{{'justify-content:center;'+('width:'+(width)+';')+('height:'+(height)+';')}}" bindtap="__e"><block wx:if="{{cSrc}}"><image style="{{'width:'+(width)+';'+('height:'+(height)+';')}}" src="{{cSrc}}" mode="{{mode}}"></image></block></view>
+<view bindtap="{{f}}" style="{{'width:' + g + ';' + ('height:' + h) + ';' + 'justify-content:center'}}"><image wx:if="{{a}}" style="{{'width:' + b + ';' + ('height:' + c)}}" src="{{d}}" mode="{{e}}"></image></view>
