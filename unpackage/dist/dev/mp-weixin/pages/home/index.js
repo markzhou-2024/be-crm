@@ -1,11 +1,2 @@
-"use strict";
-const common_vendor = require("../../common/vendor.js");
-const _sfc_main = {
-  name: "HomePage"
-};
-function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return {};
-}
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-4978fed5"]]);
-wx.createPage(MiniProgramPage);
+"use strict";const e=require("../../common/vendor.js"),r={name:"HomePage"};function c(o,t,a,s,_,d){return{}}const n=e._export_sfc(r,[["render",c],["__scopeId","data-v-4978fed5"]]);wx.createPage(n);
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/home/index.js.map

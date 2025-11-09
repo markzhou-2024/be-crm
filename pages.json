@@ -13,6 +13,24 @@
 			}
 		},
 		{
+			"path": "pages/my-customers/detail",
+			"style": {
+				"navigationBarTitleText": "客户详情"
+			}
+		},
+		{
+			"path": "pages/my-customers/create",
+			"style": {
+				"navigationBarTitleText": "新增客户"
+			}
+		},
+		{
+			"path": "pages/my-customers/edit",
+			"style": {
+				"navigationBarTitleText": "编辑客户"
+			}
+		},
+		{
 			"path": "pages/my-shops/index",
 			"style": {
 				"navigationBarTitleText": "负责的店"

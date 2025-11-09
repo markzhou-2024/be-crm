@@ -34,6 +34,8 @@
 
 <script>
 // @ts-nocheck
+import { loadShops, saveShops } from '@/utils/shopsStore.js'
+
 export default {
   data() {
     return {
@@ -58,7 +60,20 @@ export default {
       this.submitting = true
       const service = uniCloud.importObject('curd-shops')
       try {
-        await service.createShop({ ...this.form })
+        const res = await service.createShop({ ...this.form })
+        const created = res?.data || {}
+        const local = loadShops([])
+        const record = created._id ? created : {
+          ...this.form,
+          _id: created._id || Date.now().toString()
+        }
+        const idx = local.findIndex(item => item._id === record._id)
+        if (idx >= 0) {
+          local.splice(idx, 1, record)
+        } else {
+          local.unshift(record)
+        }
+        saveShops(local)
         uni.showToast({ title: '创建成功', icon: 'success' })
         setTimeout(() => uni.navigateBack(), 400)
       } catch (err) {

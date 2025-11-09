@@ -1,0 +1,2 @@
+"use strict";const t=require("../common/vendor.js"),e=t.tr.importObject("curd-shops");function n(r){if(r&&typeof r=="object"&&"errCode"in r&&r.errCode!==0){const o=new Error(r.errMsg||"请求失败");throw o.errCode=r.errCode,o}return Array.isArray(r)?r:r&&Array.isArray(r.data)?r.data:[]}async function c(){const r=await e.listMyShops();return n(r)}exports.fetchShops=c;
+//# sourceMappingURL=../../.sourcemap/mp-weixin/api/shops.js.map
