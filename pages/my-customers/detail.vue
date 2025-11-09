@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="edit-btn" @tap="goEdit">编辑</view>
     <scroll-view class="content" scroll-y>
@@ -34,37 +34,33 @@
       </view>
 
       <scroll-view class="section-tabs" scroll-x enable-flex>
-        <view
-          v-for="tab in tabs"
-          :key="tab.value"
-          class="section-tab"
-          :class="{ active: activeTab === tab.value }"
-          @tap="activeTab = tab.value"
-        >{{ tab.label }}</view>
+        <view v-for="tab in tabs" :key="tab.value" class="section-tab" :class="{ active: activeTab === tab.value }" @tap="activeTab = tab.value">
+          {{ tab.label }}
+        </view>
       </scroll-view>
 
       <view class="tab-panel" v-if="activeTab === 'purchase'">
-        <view class="placeholder-list">
-          <text class="placeholder-title">购买记录</text>
-          <text class="placeholder-line">暂无记录（占位）</text>
+        <view v-if="purchaseHistory.length" class="record-list">
+          <view class="record-card purchase-card" v-for="item in purchaseHistory" :key="item._id">
+            <view class="purchase-head">
+              <text class="purchase-title">{{ item.package_name }}</text>
+              <text class="purchase-amount">¥{{ toAmount(item.amount) }}</text>
+            </view>
+            <view class="purchase-sub">{{ item.purchase_date }} · {{ item.service_times }} 次</view>
+            <view class="record-remark" v-if="item.remark">{{ item.remark }}</view>
+          </view>
         </view>
+        <view v-else class="placeholder-list"><text class="placeholder-title">暂无购买记录</text></view>
       </view>
+
       <view class="tab-panel" v-else-if="activeTab === 'consume'">
-        <view class="placeholder-list">
-          <text class="placeholder-title">消耗记录</text>
-          <text class="placeholder-line">暂无记录（占位）</text>
-        </view>
+        <view class="placeholder-list"><text class="placeholder-title">暂无消耗记录</text></view>
       </view>
       <view class="tab-panel" v-else-if="activeTab === 'booking'">
-        <view class="booking-panel">
-          <text class="placeholder-title">预约管理</text>
-          <button class="btn ghost" @tap="addBooking">＋ 预约</button>
-        </view>
+        <view class="placeholder-list"><text class="placeholder-title">暂无预约记录</text></view>
       </view>
       <view class="tab-panel" v-else-if="activeTab === 'gallery'">
-        <view class="placeholder-list">
-          <text class="placeholder-line">图库占位</text>
-        </view>
+        <view class="placeholder-list"><text class="placeholder-line">图库占位</text></view>
       </view>
       <view class="tab-panel" v-else>
         <text class="placeholder-title">备注</text>
@@ -73,9 +69,11 @@
       </view>
 
       <view class="cta-buttons">
-        <button class="btn ghost" @tap="goPurchase">购买</button>
-        <button class="btn danger ghost" @tap="confirmDelete">删除客户</button>
+        <button class="btn fab-btn" @tap="goPurchase">＋ 购买</button>
+        <button class="btn fab-btn" @tap="comingSoon('消耗')">＋ 消耗</button>
+        <button class="btn fab-btn gold" @tap="comingSoon('预约')">＋ 预约</button>
       </view>
+      <button class="btn danger ghost mt16" @tap="confirmDelete">删除客户</button>
     </scroll-view>
   </view>
 </template>
@@ -83,6 +81,7 @@
 <script>
 // @ts-nocheck
 import { getCustomerById, updateCustomer, deleteCustomer as deleteCustomerApi } from '@/api/customers.js'
+import { listPurchases } from '@/api/purchases.js'
 
 export default {
   data() {
@@ -98,7 +97,8 @@ export default {
         { label: '图库', value: 'gallery' },
         { label: '备注', value: 'notes' }
       ],
-      activeTab: 'purchase'
+      activeTab: 'purchase',
+      purchaseHistory: []
     }
   },
   onLoad(query) {
@@ -127,20 +127,42 @@ export default {
         this.customer = data
         this.notesDraft = data.notes || ''
         uni.setNavigationBarTitle({ title: data.name || '客户详情' })
+        this.loadPurchaseHistory()
       } catch (err) {
         uni.showToast({ title: err?.errMsg || err?.message || '加载失败', icon: 'none' })
+      }
+    },
+    async loadPurchaseHistory() {
+      try {
+        const list = await listPurchases(this.id)
+        this.purchaseHistory = list
+      } catch (err) {
+        console.log('load purchase failed', err)
+        this.purchaseHistory = []
       }
     },
     goEdit() {
       uni.navigateTo({ url: `/pages/my-customers/edit?id=${this.id}` })
     },
-    addBooking() {
-      uni.showActionSheet({
-        itemList: ['意向到店', '上门服务', '电话跟进'],
-        success: () => {
-          uni.showToast({ title: '预约功能占位', icon: 'none' })
+    goPurchase() {
+      uni.navigateTo({
+        url: '/pages/purchases/create',
+        events: {
+          purchaseCreated: () => {
+            this.loadPurchaseHistory()
+            uni.showToast({ title: '已记录购买', icon: 'success' })
+          }
+        },
+        success: res => {
+          res.eventChannel.emit('initCustomerInfo', {
+            customerId: this.id,
+            customerName: this.customer.name
+          })
         }
       })
+    },
+    comingSoon(label) {
+      uni.showToast({ title: `${label}功能开发中`, icon: 'none' })
     },
     async saveNotes() {
       try {
@@ -173,22 +195,6 @@ export default {
         uni.showToast({ title: err?.errMsg || err?.message || '删除失败', icon: 'none' })
       }
     },
-    goPurchase() {
-      uni.navigateTo({
-        url: '/pages/purchases/create',
-        events: {
-          purchaseCreated: payload => {
-            uni.showToast({ title: `已记录购买：${payload.package_name}`, icon: 'success' })
-          }
-        },
-        success: res => {
-          res.eventChannel.emit('initCustomerInfo', {
-            customerId: this.id,
-            customerName: this.customer.name
-          })
-        }
-      })
-    },
     toAmount(n) {
       try {
         return Number(n || 0).toLocaleString('zh-CN')
@@ -203,11 +209,7 @@ export default {
 <style scoped>
 .page { min-height:100vh; background:#f6f7f9; position:relative; }
 .content { height:100vh; padding:16px; box-sizing:border-box; }
-.hero {
-  display:flex; gap:12px; align-items:center;
-  background:#fff; border-radius:20px; padding:16px;
-  box-shadow:0 10px 24px rgba(0,0,0,.04);
-}
+.hero { display:flex; gap:12px; align-items:center; background:#fff; border-radius:20px; padding:16px; box-shadow:0 10px 24px rgba(0,0,0,.04); }
 .hero .avatar { width:72px; height:72px; border-radius:36px; background:#eee; }
 .info { flex:1; }
 .name-row { display:flex; align-items:center; gap:8px; }
@@ -218,41 +220,37 @@ export default {
 .phone-row { margin-top:6px; font-size:14px; color:#555; display:flex; gap:6px; }
 .phone-icon { color:#b7b7bc; }
 
-.stat-card {
-  margin-top:16px; background:#fff; border-radius:20px; padding:16px;
-  display:flex; align-items:center; justify-content:space-between;
-}
+.stat-card { margin-top:16px; background:#fff; border-radius:20px; padding:16px; display:flex; align-items:center; justify-content:space-between; }
 .stat { flex:1; text-align:center; }
 .stat-label { display:block; color:#9a9aa0; font-size:12px; margin-bottom:6px; }
 .stat-value { font-size:18px; font-weight:700; color:#333; }
 .divider { width:1px; height:36px; background:#f0f0f2; }
 
 .section-tabs { margin-top:18px; white-space:nowrap; }
-.section-tab {
-  display:inline-flex; align-items:center; justify-content:center;
-  height:34px; padding:0 14px; margin-right:10px;
-  border-radius:17px; background:#fff; color:#666; font-size:13px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.04);
-}
+.section-tab { display:inline-flex; align-items:center; justify-content:center; height:34px; padding:0 14px; margin-right:10px; border-radius:17px; background:#fff; color:#666; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,0.04); }
 .section-tab.active { background:#caa265; color:#fff; font-weight:600; }
 
-.tab-panel {
-  margin-top:14px; background:#fff; border-radius:20px; padding:16px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.03);
-}
+.tab-panel { margin-top:14px; background:#fff; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.03); }
+.record-list { display:flex; flex-direction:column; gap:10px; }
+.record-card { background:#fdfdfd; border-radius:16px; padding:12px; box-shadow:0 2px 6px rgba(0,0,0,0.03); }
+.purchase-card { padding:14px 16px; }
+.purchase-head { display:flex; justify-content:space-between; align-items:center; }
+.purchase-title { font-size:14px; color:#333; font-weight:600; }
+.purchase-amount { font-size:14px; color:#caa265; }
+.purchase-sub { margin-top:8px; font-size:12px; color:#9a9aa0; }
+.record-remark { margin-top:4px; font-size:12px; color:#9a9aa0; }
 .placeholder-title { font-size:14px; color:#333; font-weight:600; }
 .placeholder-line { display:block; margin-top:4px; color:#9a9aa0; font-size:12px; }
-.booking-panel { display:flex; align-items:center; justify-content:space-between; }
 .notes { width:100%; min-height:100px; margin:12px 0; background:#f6f7f9; border-radius:12px; padding:10px; box-sizing:border-box; }
 
 .btn { height:42px; border-radius:22px; font-size:15px; margin-top:8px; }
 .primary { background:#caa265; color:#fff; }
 .ghost { background:#fff; color:#caa265; border:1px solid #eedfc4; }
 .danger { color:#dd524d; border-color:#f6c8cd; }
+.mt16 { margin-top:16px; }
+.cta-buttons { margin:16px 0; display:flex; justify-content:space-between; gap:12px; }
+.fab-btn { flex:1; background:#fff; border-radius:24px; border:1px solid #eee; color:#333; height:42px; }
+.fab-btn.gold { background:#caa265; color:#fff; border:none; }
 
-.edit-btn {
-  position:fixed; right:16px; top:12px;
-  color:#caa265; padding:6px 12px; background:#fff;
-  border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); z-index:11;
-}
+.edit-btn { position:fixed; right:16px; top:12px; color:#caa265; padding:6px 12px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); z-index:11; }
 </style>

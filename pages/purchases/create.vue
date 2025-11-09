@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="header">
       <text class="title">新增购买</text>
@@ -17,6 +17,13 @@
       </view>
 
       <view class="field required">
+        <text class="label">购买日期</text>
+        <picker mode="date" :value="form.purchase_date" @change="e => form.purchase_date = e.detail.value">
+          <view class="picker-trigger">{{ form.purchase_date }}</view>
+        </picker>
+      </view>
+
+      <view class="field required">
         <text class="label">费用（元）</text>
         <input class="input" v-model="form.amount" type="number" placeholder="0.00" />
       </view>
@@ -24,6 +31,17 @@
       <view class="field">
         <text class="label">备注</text>
         <textarea class="textarea" v-model="form.remark" placeholder="可记录购买备注" />
+      </view>
+
+      <view class="history" v-if="history.length">
+        <text class="history-title">最近记录</text>
+        <view class="history-item" v-for="item in history" :key="item._id">
+          <view class="history-row">
+            <text class="history-name">{{ item.package_name }}</text>
+            <text class="history-amount">¥{{ toAmount(item.amount) }}</text>
+          </view>
+          <text class="history-sub">{{ item.purchase_date }} · {{ item.service_times }} 次</text>
+        </view>
       </view>
     </scroll-view>
 
@@ -36,6 +54,8 @@
 
 <script>
 // @ts-nocheck
+import { createPurchase, listPurchases } from '@/api/purchases.js'
+
 export default {
   data() {
     return {
@@ -44,22 +64,41 @@ export default {
       form: {
         package_name: '',
         service_times: '',
+        purchase_date: '',
         amount: '',
         remark: ''
-      }
+      },
+      history: []
     }
   },
   onLoad() {
+    this.form.purchase_date = this.formatDate(new Date())
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel()
     if (channel) {
       channel.on('initCustomerInfo', payload => {
         this.customerId = payload?.customerId || ''
         this.customerName = payload?.customerName || ''
+        this.loadHistory()
       })
       this.eventChannel = channel
     }
   },
   methods: {
+    formatDate(date) {
+      const d = new Date(date)
+      const m = d.getMonth() + 1
+      const day = d.getDate()
+      return `${d.getFullYear()}-${m < 10 ? '0' + m : m}-${day < 10 ? '0' + day : day}`
+    },
+    async loadHistory() {
+      if (!this.customerId) return
+      try {
+        const list = await listPurchases(this.customerId)
+        this.history = list.slice(0, 5)
+      } catch (err) {
+        console.log('load history failed', err)
+      }
+    },
     cancel() {
       uni.navigateBack()
     },
@@ -73,8 +112,12 @@ export default {
         uni.showToast({ title: '服务次数须为正整数', icon: 'none' })
         return false
       }
+      if (!this.form.purchase_date) {
+        uni.showToast({ title: '请选择购买日期', icon: 'none' })
+        return false
+      }
       const amount = Number(this.form.amount)
-      if (isNaN(amount) || amount < 0 || !/^\d+(\.\d{1,2})?$/.test(this.form.amount)) {
+      if (isNaN(amount) || amount < 0 || !/^[0-9]+(\.[0-9]{1,2})?$/.test(this.form.amount)) {
         uni.showToast({ title: '费用格式不正确', icon: 'none' })
         return false
       }
@@ -82,20 +125,32 @@ export default {
       this.form.amount = amount
       return true
     },
-    submit() {
+    async submit() {
       if (!this.validate()) return
       const payload = {
         customer_id: this.customerId,
         package_name: this.form.package_name.trim(),
         service_times: this.form.service_times,
+        purchase_date: this.form.purchase_date,
         amount: this.form.amount,
         remark: this.form.remark.trim()
       }
-      console.log('purchase payload', payload)
-      if (this.eventChannel) {
-        this.eventChannel.emit('purchaseCreated', payload)
+      try {
+        const record = await createPurchase(payload)
+        if (this.eventChannel) {
+          this.eventChannel.emit('purchaseCreated', record)
+        }
+        uni.navigateBack()
+      } catch (err) {
+        uni.showToast({ title: err?.errMsg || err?.message || '保存失败', icon: 'none' })
       }
-      uni.navigateBack()
+    },
+    toAmount(n) {
+      try {
+        return Number(n || 0).toLocaleString('zh-CN')
+      } catch (e) {
+        return n
+      }
     }
   }
 }
@@ -111,7 +166,14 @@ export default {
 .field.required .label::after { content:'*'; color:#dd524d; margin-left:4px; }
 .label { display:block; font-size:13px; color:#9a9aa0; margin-bottom:6px; }
 .input { font-size:15px; color:#333; }
+.picker-trigger { font-size:15px; color:#333; background:#f7f7f8; border-radius:10px; padding:10px 12px; }
 .textarea { width:100%; min-height:90px; font-size:15px; color:#333; }
+.history { margin-top:12px; }
+.history-title { font-size:13px; color:#999; margin-bottom:6px; }
+.history-item { background:#fff; border-radius:16px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); margin-bottom:10px; }
+.history-row { display:flex; justify-content:space-between; font-size:14px; color:#333; }
+.history-amount { color:#caa265; }
+.history-sub { font-size:12px; color:#9a9aa0; margin-top:4px; }
 .actions { padding:16px; display:flex; gap:12px; }
 .btn { flex:1; height:46px; border-radius:24px; font-size:16px; }
 .primary { background:#caa265; color:#fff; }

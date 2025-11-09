@@ -1,0 +1,2 @@
+"use strict";const e=require("../common/vendor.js"),a=e.tr.importObject("curd-buy");function c(r){if(r&&typeof r=="object"&&"errCode"in r&&r.errCode!==0){const t=new Error(r.errMsg||"请求失败");throw t.errCode=r.errCode,t}return Array.isArray(r)?r:r&&Array.isArray(r.data)?r.data:(r==null?void 0:r.data)||r}async function n(r){const t=await a.createPurchase(r);return c(t)}async function o(r){const t=await a.listPurchases(r);return c(t)||[]}exports.createPurchase=n;exports.listPurchases=o;
+//# sourceMappingURL=../../.sourcemap/mp-weixin/api/purchases.js.map
