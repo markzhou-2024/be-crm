@@ -1,0 +1,1 @@
+<view class="row data-v-8e37436c" bindtap="{{e}}"><view class="time data-v-8e37436c">{{a}}</view><view class="info data-v-8e37436c"><view class="name data-v-8e37436c">{{b}}</view><view class="desc data-v-8e37436c">{{c}} · {{d}}</view></view><text class="arrow data-v-8e37436c">›</text></view>

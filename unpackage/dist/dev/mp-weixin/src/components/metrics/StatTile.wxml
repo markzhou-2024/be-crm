@@ -1,0 +1,1 @@
+<app-card wx:if="{{e}}" class="data-v-85e3de89" u-s="{{['d']}}" u-i="85e3de89-0" bind:__l="__l" u-p="{{e}}"><view class="tile data-v-85e3de89"><text class="icon data-v-85e3de89" style="{{'color:' + b}}">{{a}}</text><view class="val data-v-85e3de89">{{c}}</view><view class="label data-v-85e3de89">{{d}}</view></view></app-card>

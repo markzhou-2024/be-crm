@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "首页",
+  "backgroundColor": "#F7F7F7",
+  "usingComponents": {
+    "app-card": "../../src/components/ui/AppCard",
+    "section-header": "../../src/components/ui/SectionHeader",
+    "stat-tile": "../../src/components/metrics/StatTile",
+    "appointment-item": "../../src/components/appointment/AppointmentItem"
+  }
+}
