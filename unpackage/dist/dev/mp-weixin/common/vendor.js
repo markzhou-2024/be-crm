@@ -7293,9 +7293,9 @@ function isConsoleWritable() {
   return isWritable;
 }
 function initRuntimeSocketService() {
-  const hosts = "127.0.0.1,192.168.1.199";
+  const hosts = "127.0.0.1,172.20.10.2";
   const port = "8090";
-  const id = "mp-weixin_YSG9cr";
+  const id = "mp-weixin_6qI2Tv";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -8298,6 +8298,24 @@ const pages = [
     }
   },
   {
+    path: "pages/appointments/next-week",
+    style: {
+      navigationBarTitleText: "本周预约"
+    }
+  },
+  {
+    path: "pages/calendar/index",
+    style: {
+      navigationBarTitleText: "预约月历"
+    }
+  },
+  {
+    path: "pages/analytics/store",
+    style: {
+      navigationBarTitleText: "门店指标"
+    }
+  },
+  {
     path: "pages/my-shops/index",
     style: {
       navigationBarTitleText: "负责的店"
@@ -8798,7 +8816,7 @@ class S {
 function T(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","192.168.1.199"],"servePort":7001,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","/Applications/HBuilderX-Alpha.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"aliyun","spaceName":"crm-date","spaceId":"mp-fdba21ff-bad9-47b6-9972-a95e35f46ea2","clientSecret":"SEQ0WVVz3pdX38TL3LEHxw==","endpoint":"https://api.next.bspapp.com"}]') || [];
+const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","172.20.10.2"],"servePort":7001,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","/Applications/HBuilderX-Alpha.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"aliyun","spaceName":"crm-date","spaceId":"mp-fdba21ff-bad9-47b6-9972-a95e35f46ea2","clientSecret":"SEQ0WVVz3pdX38TL3LEHxw==","endpoint":"https://api.next.bspapp.com"}]') || [];
 let N = "";
 try {
   N = "__UNI__4B38155";

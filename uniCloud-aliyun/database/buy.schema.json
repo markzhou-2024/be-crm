@@ -48,6 +48,10 @@
 			"bsonType": "string",
 			"description": "备注"
 		},
+		"store_id": {
+			"bsonType": "string",
+			"description": "门店ID（可选）"
+		},
 		"store_name": {
 			"bsonType": "string",
 			"description": "门店名称（可选）"
@@ -60,5 +64,23 @@
 			"bsonType": "long",
 			"description": "更新时间戳"
 		}
-	}
+	},
+	"indexes": [
+		{
+			"name": "idx_user_store_time",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "store_id", "order": "asc" },
+				{ "field": "create_time", "order": "desc" }
+			]
+		},
+		{
+			"name": "idx_user_customer_time",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "customer_id", "order": "asc" },
+				{ "field": "create_time", "order": "desc" }
+			]
+		}
+	]
 }

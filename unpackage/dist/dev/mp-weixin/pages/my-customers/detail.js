@@ -3,6 +3,7 @@ const common_vendor = require("../../common/vendor.js");
 const api_customers = require("../../api/customers.js");
 const api_purchases = require("../../api/purchases.js");
 const api_bookings = require("../../api/bookings.js");
+const api_analytics = require("../../api/analytics.js");
 const _sfc_main = {
   data() {
     return {
@@ -25,7 +26,8 @@ const _sfc_main = {
       bookingLoading: false,
       bookingLoaded: false,
       bookingStatusUpdating: "",
-      isRefreshing: false
+      isRefreshing: false,
+      storeVisitCount: null
     };
   },
   watch: {
@@ -50,6 +52,7 @@ const _sfc_main = {
       if (this.activeTab === "booking" && this.bookingLoaded) {
         this.loadBookings({ force: true, silent: true });
       }
+      this.loadStoreVisitCount();
     }
   },
   methods: {
@@ -69,6 +72,7 @@ const _sfc_main = {
           this.loadPurchaseHistory(),
           this.loadConsumeHistory()
         ]);
+        await this.loadStoreVisitCount();
       } catch (err) {
         common_vendor.index.showToast({ title: (err == null ? void 0 : err.errMsg) || (err == null ? void 0 : err.message) || "加载失败", icon: "none" });
       }
@@ -98,7 +102,7 @@ const _sfc_main = {
         this.purchaseHistory = list;
         this.decorateConsumeRecords();
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:232", "load purchase failed", err);
+        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:244", "load purchase failed", err);
         this.purchaseHistory = [];
       }
     },
@@ -109,7 +113,7 @@ const _sfc_main = {
         this.consumeHistory = this.normalizeCloudList(res);
         this.decorateConsumeRecords();
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:243", "load consume failed", err);
+        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:255", "load consume failed", err);
         this.consumeHistory = [];
       }
     },
@@ -158,6 +162,12 @@ const _sfc_main = {
           }
         }
       });
+    },
+    goNextWeek() {
+      common_vendor.index.navigateTo({ url: "/pages/appointments/next-week" });
+    },
+    goCalendar() {
+      common_vendor.index.navigateTo({ url: "/pages/calendar/index" });
     },
     goBookingCreate() {
       const cid = this.customer._id || this.customer.id || this.id;
@@ -222,6 +232,24 @@ const _sfc_main = {
       } finally {
         if (shouldShowLoading) {
           this.bookingLoading = false;
+        }
+      }
+    },
+    async loadStoreVisitCount() {
+      const cid = this.customer._id || this.customer.id || this.id;
+      const storeId = this.customer.store_id || this.customer.storeId;
+      if (!cid || !storeId) {
+        this.storeVisitCount = null;
+        return;
+      }
+      try {
+        const res = await api_analytics.fetchCustomerStoreVisitCount({ customer_id: cid, store_id: storeId });
+        this.storeVisitCount = Number((res == null ? void 0 : res.visit_count) ?? 0);
+      } catch (err) {
+        if ((err == null ? void 0 : err.code) === 401 || (err == null ? void 0 : err.errCode) === 401) {
+          this.storeVisitCount = null;
+        } else {
+          this.storeVisitCount = null;
         }
       }
     },
@@ -450,9 +478,13 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     j: common_vendor.t($data.customer.city)
   } : {}, {
     k: common_vendor.t($data.customer.phone || "-"),
-    l: common_vendor.t($options.toAmount($data.stats.total_spend)),
-    m: common_vendor.t($data.stats.visit_count || 0),
-    n: common_vendor.f($data.tabs, (tab, k0, i0) => {
+    l: $data.storeVisitCount !== null
+  }, $data.storeVisitCount !== null ? {
+    m: common_vendor.t($data.storeVisitCount)
+  } : {}, {
+    n: common_vendor.t($options.toAmount($data.stats.total_spend)),
+    o: common_vendor.t($data.stats.visit_count || 0),
+    p: common_vendor.f($data.tabs, (tab, k0, i0) => {
       return {
         a: common_vendor.t(tab.label),
         b: tab.value,
@@ -460,11 +492,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         d: common_vendor.o(($event) => $data.activeTab = tab.value, tab.value)
       };
     }),
-    o: $data.activeTab === "purchase"
+    q: $data.activeTab === "purchase"
   }, $data.activeTab === "purchase" ? common_vendor.e({
-    p: $data.purchaseHistory.length
+    r: $data.purchaseHistory.length
   }, $data.purchaseHistory.length ? {
-    q: common_vendor.f($data.purchaseHistory, (item, k0, i0) => {
+    s: common_vendor.f($data.purchaseHistory, (item, k0, i0) => {
       return common_vendor.e({
         a: common_vendor.t(item.package_name),
         b: common_vendor.t($options.toAmount(item.amount)),
@@ -478,9 +510,9 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     })
   } : {}) : $data.activeTab === "consume" ? common_vendor.e({
-    s: $data.consumeHistory.length
+    v: $data.consumeHistory.length
   }, $data.consumeHistory.length ? {
-    t: common_vendor.f($data.consumeHistory, (item, k0, i0) => {
+    w: common_vendor.f($data.consumeHistory, (item, k0, i0) => {
       return common_vendor.e({
         a: common_vendor.t(item.product_name || item.package_name || "项目"),
         b: common_vendor.t($options.formatConsumeDate(item.consumed_at || item.service_date)),
@@ -494,9 +526,11 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     })
   } : {}) : $data.activeTab === "booking" ? common_vendor.e({
-    w: $data.bookingLoading && !$data.bookingList.length
+    y: common_vendor.o((...args) => $options.goNextWeek && $options.goNextWeek(...args)),
+    z: common_vendor.o((...args) => $options.goCalendar && $options.goCalendar(...args)),
+    A: $data.bookingLoading && !$data.bookingList.length
   }, $data.bookingLoading && !$data.bookingList.length ? {} : $data.bookingList.length ? {
-    y: common_vendor.f($data.bookingList, (item, k0, i0) => {
+    C: common_vendor.f($data.bookingList, (item, k0, i0) => {
       return common_vendor.e({
         a: common_vendor.t($options.formatBookingTime(item.start_ts)),
         b: common_vendor.t($options.formatBookingDate(item.start_ts)),
@@ -516,20 +550,20 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       });
     })
   } : {}, {
-    x: $data.bookingList.length
+    B: $data.bookingList.length
   }) : $data.activeTab === "gallery" ? {} : {
-    A: $data.notesDraft,
-    B: common_vendor.o(($event) => $data.notesDraft = $event.detail.value),
-    C: common_vendor.o((...args) => $options.saveNotes && $options.saveNotes(...args))
+    E: $data.notesDraft,
+    F: common_vendor.o(($event) => $data.notesDraft = $event.detail.value),
+    G: common_vendor.o((...args) => $options.saveNotes && $options.saveNotes(...args))
   }, {
-    r: $data.activeTab === "consume",
-    v: $data.activeTab === "booking",
-    z: $data.activeTab === "gallery",
-    D: $data.isRefreshing,
-    E: common_vendor.o((...args) => $options.handlePageRefresh && $options.handlePageRefresh(...args)),
-    F: common_vendor.o((...args) => $options.goPurchase && $options.goPurchase(...args)),
-    G: common_vendor.o((...args) => $options.goConsume && $options.goConsume(...args)),
-    H: common_vendor.o((...args) => $options.goBookingCreate && $options.goBookingCreate(...args))
+    t: $data.activeTab === "consume",
+    x: $data.activeTab === "booking",
+    D: $data.activeTab === "gallery",
+    H: $data.isRefreshing,
+    I: common_vendor.o((...args) => $options.handlePageRefresh && $options.handlePageRefresh(...args)),
+    J: common_vendor.o((...args) => $options.goPurchase && $options.goPurchase(...args)),
+    K: common_vendor.o((...args) => $options.goConsume && $options.goConsume(...args)),
+    L: common_vendor.o((...args) => $options.goBookingCreate && $options.goBookingCreate(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-20dde889"]]);

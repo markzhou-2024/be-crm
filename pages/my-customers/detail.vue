@@ -24,6 +24,10 @@
             <text class="phone-icon">📞</text>
             <text>{{ customer.phone || '-' }}</text>
           </view>
+          <view class="visit-row" v-if="storeVisitCount !== null">
+            <text class="visit-label">本月到该店</text>
+            <text class="visit-value">{{ storeVisitCount }} 次</text>
+          </view>
         </view>
       </view>
 
@@ -75,6 +79,10 @@
         <view v-else class="placeholder-list"><text class="placeholder-title">暂无消耗记录</text></view>
       </view>
       <view class="tab-panel" v-else-if="activeTab === 'booking'">
+        <view class="booking-toolbar">
+          <button class="link-btn" @tap="goNextWeek">查看周计划</button>
+          <button class="link-btn ghost" @tap="goCalendar">月历概览</button>
+        </view>
         <view v-if="bookingLoading && !bookingList.length" class="placeholder-list"><text class="placeholder-title">预约加载中...</text></view>
         <view v-else-if="bookingList.length" class="booking-list">
           <view
@@ -131,6 +139,7 @@
 import { getCustomerById, updateCustomer, deleteCustomer as deleteCustomerApi } from '@/api/customers.js'
 import { listPurchases } from '@/api/purchases.js'
 import { listBookingsByCustomer, updateBookingStatus as updateBookingStatusApi } from '@/api/bookings.js'
+import { fetchCustomerStoreVisitCount } from '@/api/analytics.js'
 
 export default {
   data() {
@@ -154,7 +163,8 @@ export default {
       bookingLoading: false,
       bookingLoaded: false,
       bookingStatusUpdating: '',
-      isRefreshing: false
+      isRefreshing: false,
+      storeVisitCount: null
     }
   },
   watch: {
@@ -179,6 +189,7 @@ export default {
       if (this.activeTab === 'booking' && this.bookingLoaded) {
         this.loadBookings({ force: true, silent: true })
       }
+      this.loadStoreVisitCount()
     }
   },
   methods: {
@@ -198,6 +209,7 @@ export default {
           this.loadPurchaseHistory(),
           this.loadConsumeHistory()
         ])
+        await this.loadStoreVisitCount()
       } catch (err) {
         uni.showToast({ title: err?.errMsg || err?.message || '加载失败', icon: 'none' })
       }
@@ -286,6 +298,12 @@ export default {
         }
       })
     },
+    goNextWeek() {
+      uni.navigateTo({ url: '/pages/appointments/next-week' })
+    },
+    goCalendar() {
+      uni.navigateTo({ url: '/pages/calendar/index' })
+    },
     goBookingCreate() {
       const cid = this.customer._id || this.customer.id || this.id
       if (!cid) {
@@ -345,6 +363,24 @@ export default {
       } finally {
         if (shouldShowLoading) {
           this.bookingLoading = false
+        }
+      }
+    },
+    async loadStoreVisitCount() {
+      const cid = this.customer._id || this.customer.id || this.id
+      const storeId = this.customer.store_id || this.customer.storeId
+      if (!cid || !storeId) {
+        this.storeVisitCount = null
+        return
+      }
+      try {
+        const res = await fetchCustomerStoreVisitCount({ customer_id: cid, store_id: storeId })
+        this.storeVisitCount = Number(res?.visit_count ?? 0)
+      } catch (err) {
+        if (err?.code === 401 || err?.errCode === 401) {
+          this.storeVisitCount = null
+        } else {
+          this.storeVisitCount = null
         }
       }
     },
@@ -558,6 +594,8 @@ export default {
 .tag-row .tag { background:#f6f6f8; padding:2px 8px; border-radius:10px; }
 .phone-row { margin-top:6px; font-size:14px; color:#555; display:flex; gap:6px; }
 .phone-icon { color:#b7b7bc; }
+.visit-row { margin-top:6px; font-size:12px; color:#6f6f73; display:flex; gap:6px; align-items:center; }
+.visit-value { color:#caa265; font-weight:600; }
 
 .stat-card { margin-top:16px; background:#fff; border-radius:20px; padding:16px; display:flex; align-items:center; justify-content:space-between; }
 .stat { flex:1; text-align:center; }
@@ -600,6 +638,9 @@ export default {
 
 .edit-btn { position:fixed; right:16px; top:12px; color:#caa265; padding:6px 12px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); z-index:11; }
 .booking-list { display:flex; flex-direction:column; gap:12px; }
+.booking-toolbar { display:flex; gap:10px; margin-bottom:12px; }
+.link-btn { flex:1; height:36px; border-radius:18px; background:#caa265; color:#fff; font-size:13px; }
+.link-btn.ghost { background:#fff; color:#caa265; border:1px solid #eedfc4; }
 .booking-card { display:flex; align-items:flex-start; background:#fdfdfd; border-radius:22px; padding:14px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.04); }
 .booking-card.updating { opacity:0.6; }
 .booking-time { width:80px; }

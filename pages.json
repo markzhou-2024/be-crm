@@ -56,6 +56,24 @@
 			}
 		},
 		{
+			"path": "pages/appointments/next-week",
+			"style": {
+				"navigationBarTitleText": "本周预约"
+			}
+		},
+		{
+			"path": "pages/calendar/index",
+			"style": {
+				"navigationBarTitleText": "预约月历"
+			}
+		},
+		{
+			"path": "pages/analytics/store",
+			"style": {
+				"navigationBarTitleText": "门店指标"
+			}
+		},
+		{
 			"path": "pages/my-shops/index",
 			"style": {
 				"navigationBarTitleText": "负责的店"

@@ -4,6 +4,18 @@
     <view class="avatar">
       <uni-id-pages-avatar width="260rpx" height="260rpx"></uni-id-pages-avatar>
     </view>
+    <view class="profile-card">
+      <view class="section-header">
+        <text class="section-title">经营概览</text>
+        <text class="section-subtitle">本月</text>
+      </view>
+      <view class="stats-grid">
+        <stat-tile icon="🏪" :value="stats.store_count" label="门店数" />
+        <stat-tile icon="👥" :iconColor="'#20C997'" :value="fmtNum(stats.customer_count)" label="客户数" />
+        <stat-tile icon="＄" :iconColor="'#C8A675'" :value="'¥' + kfmt(stats.month_sales)" label="本月销售额" />
+        <stat-tile icon="🎫" :value="fmtNum(stats.month_consume_count)" label="本月消耗次数" />
+      </view>
+    </view>
     <uni-list>
       <uni-list-item class="item" @click="setNickname('')" title="昵称" :rightText="userInfo.nickname||'未设置'" link>
       </uni-list-item>
@@ -38,51 +50,71 @@
   </template>
 <script>
 const uniIdCo = uniCloud.importObject("uni-id-co")
-  import {
-    store,
-    mutations
-  } from '@/uni_modules/uni-id-pages/common/store.js'
-	export default {
-    computed: {
-      userInfo() {
-        return store.userInfo
-      },
-	  realNameStatus () {
-		  if (!this.userInfo.realNameAuth) {
-			  return 0
-		  }
+import { store, mutations } from '@/uni_modules/uni-id-pages/common/store.js'
+import StatTile from '@/src/components/metrics/StatTile.vue'
+import { getHomeStats } from '@/src/services/home.js'
 
-		  return this.userInfo.realNameAuth.authStatus
-	  }
+export default {
+  components: {
+    StatTile
+  },
+  computed: {
+    userInfo() {
+      return store.userInfo
     },
-		data() {
-			return {
-				univerifyStyle: {
-					authButton: {
-						"title": "本机号码一键绑定", // 授权按钮文案
-					},
-					otherLoginButton: {
-						"title": "其他号码绑定",
-					}
-				},
-				// userInfo: {
-				// 	mobile:'',
-				// 	nickname:''
-				// },
-				hasPwd: false,
-				setNicknameIng:false
-			}
-		},
-		async onShow() {
-			this.univerifyStyle.authButton.title = "本机号码一键绑定"
-			this.univerifyStyle.otherLoginButton.title = "其他号码绑定"
-		},
+    realNameStatus () {
+      if (!this.userInfo.realNameAuth) {
+        return 0
+      }
+
+      return this.userInfo.realNameAuth.authStatus
+    }
+  },
+  data() {
+    return {
+      univerifyStyle: {
+        authButton: {
+          "title": "本机号码一键绑定", // 授权按钮文案
+        },
+        otherLoginButton: {
+          "title": "其他号码绑定",
+        }
+      },
+      hasPwd: false,
+      setNicknameIng:false,
+      stats: {
+        store_count: 0,
+        customer_count: 0,
+        month_sales: 0,
+        month_consume_count: 0
+      }
+    }
+  },
+  async onShow() {
+    this.univerifyStyle.authButton.title = "本机号码一键绑定"
+    this.univerifyStyle.otherLoginButton.title = "其他号码绑定"
+    await this.loadStats()
+  },
 		async onLoad(e) {
 			// 判断当前用户是否有密码，否则就不显示密码修改功能
 			let res = await uniIdCo.getAccountInfo()
 			this.hasPwd = res.isPasswordSet
 		},
 		methods: {
+      async loadStats() {
+        try {
+          this.stats = await getHomeStats()
+        } catch (err) {
+          console.log('load stats failed', err)
+        }
+      },
+      kfmt(n) {
+        const v = Number(n || 0)
+        return v >= 1000 ? Math.round(v / 1000) + 'K' : v
+      },
+      fmtNum (n) {
+        return Number(n || 0).toLocaleString('zh-CN')
+      },
 			login() {
 				uni.navigateTo({
 					url: '/uni_modules/uni-id-pages/pages/login/login-withoutpwd',
@@ -245,6 +277,38 @@ const uniIdCo = uniCloud.importObject("uni-id-co")
 		justify-content: center;
 		margin: 22px 0;
 		width: 100%;
+	}
+
+	.profile-card {
+		margin: 0 16px 24px;
+		background: #fff;
+		border-radius: 24px;
+		padding: 20px;
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+	}
+
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 14px;
+	}
+
+	.section-title {
+		font-size: 16px;
+		font-weight: 600;
+		color: #111;
+	}
+
+	.section-subtitle {
+		font-size: 13px;
+		color: #6f6f73;
+	}
+
+	.stats-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		grid-gap: 12px;
 	}
 
 	.item {

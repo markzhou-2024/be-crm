@@ -105,6 +105,33 @@ view.data-v-0be2f605 {
   margin: 22px 0;
   width: 100%;
 }
+.profile-card.data-v-0be2f605 {
+  margin: 0 16px 24px;
+  background: #fff;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+.section-header.data-v-0be2f605 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.section-title.data-v-0be2f605 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+}
+.section-subtitle.data-v-0be2f605 {
+  font-size: 13px;
+  color: #6f6f73;
+}
+.stats-grid.data-v-0be2f605 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 12px;
+}
 .item.data-v-0be2f605 {
   flex: 1;
   flex-direction: row;

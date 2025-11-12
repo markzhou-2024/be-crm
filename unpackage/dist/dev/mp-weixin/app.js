@@ -12,6 +12,9 @@ if (!Math) {
   "./pages/purchases/consume.js";
   "./pages/bookings/create.js";
   "./pages/bookings/index.js";
+  "./pages/appointments/next-week.js";
+  "./pages/calendar/index.js";
+  "./pages/analytics/store.js";
   "./pages/my-shops/index.js";
   "./uni_modules/uni-id-pages/pages/userinfo/deactivate/deactivate.js";
   "./uni_modules/uni-id-pages/pages/userinfo/userinfo.js";

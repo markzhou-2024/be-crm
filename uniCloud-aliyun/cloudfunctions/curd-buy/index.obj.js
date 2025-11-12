@@ -1,6 +1,7 @@
 ﻿const uniID = require('uni-id-common')
 const db = uniCloud.database()
 const buyCollection = db.collection('buy')
+const customersCollection = db.collection('customers')
 
 function assertAuthed (ctx) {
   if (!ctx.uid) {
@@ -51,6 +52,7 @@ module.exports = {
     const packageName = (purchase.package_name || '').trim()
     const customerId = (purchase.customer_id || '').trim()
     const storeName = (purchase.store_name || '').trim()
+    const storeIdInput = (purchase.store_id || '').trim()
     if (!packageName || !customerId) {
       return { errCode: 'INVALID_PARAM', errMsg: '套餐名称与客户ID必填' }
     }
@@ -64,6 +66,17 @@ module.exports = {
     }
     const date = purchase.purchase_date || new Date().toISOString().slice(0, 10)
     const now = Date.now()
+    let storeId = storeIdInput
+    let finalStoreName = storeName
+    const { data: customerDocs } = await customersCollection.where({
+      _id: customerId,
+      user_id: this.uid
+    }).field('store_id,store_name').limit(1).get()
+    const customerInfo = customerDocs && customerDocs[0]
+    if (customerInfo) {
+      if (!storeId) storeId = (customerInfo.store_id || '').trim()
+      if (!finalStoreName) finalStoreName = customerInfo.store_name || ''
+    }
     const payload = {
       user_id: this.uid,
       customer_id: customerId,
@@ -72,7 +85,8 @@ module.exports = {
       amount,
       purchase_date: date,
       remark: purchase.remark || '',
-      store_name: storeName,
+      store_id: storeId,
+      store_name: finalStoreName,
       create_time: now,
       update_time: now
     }

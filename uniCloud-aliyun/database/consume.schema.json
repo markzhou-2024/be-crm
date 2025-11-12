@@ -37,6 +37,14 @@
 			"description": "备注",
 			"bsonType": "string"
 		},
+		"store_id": {
+			"description": "门店ID",
+			"bsonType": "string"
+		},
+		"store_name": {
+			"description": "门店名称",
+			"bsonType": "string"
+		},
 		"consumed_at": {
 			"description": "消耗发生时间（时间戳）",
 			"bsonType": "long"
@@ -49,5 +57,30 @@
 			"description": "更新时间",
 			"bsonType": "long"
 		}
-	}
+	},
+	"indexes": [
+		{
+			"name": "idx_user_store_time",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "store_id", "order": "asc" },
+				{ "field": "consumed_at", "order": "desc" }
+			]
+		},
+		{
+			"name": "idx_user_customer_time",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "customer_id", "order": "asc" },
+				{ "field": "consumed_at", "order": "desc" }
+			]
+		},
+		{
+			"name": "idx_user_buy",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "buy_id", "order": "asc" }
+			]
+		}
+	]
 }

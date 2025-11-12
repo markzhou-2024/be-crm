@@ -1,6 +1,7 @@
 const uniID = require('uni-id-common')
 const db = uniCloud.database()
 const consumeCollection = db.collection('consume')
+const customersCollection = db.collection('customers')
 
 function assertAuthed (ctx) {
 	if (!ctx.uid) {
@@ -88,6 +89,19 @@ module.exports = {
 		}
 		const now = Date.now()
 		const consumedAt = parseTimestamp(consume.consumed_at ?? consume.service_date, now)
+		let storeId = cleanString(consume.store_id)
+		let storeName = cleanString(consume.store_name)
+		if (!storeId || !storeName) {
+			const { data: customerDocs } = await customersCollection.where({
+				_id: customerId,
+				user_id: this.uid
+			}).field('store_id,store_name').limit(1).get()
+			const customer = customerDocs && customerDocs[0]
+			if (customer) {
+				if (!storeId) storeId = cleanString(customer.store_id)
+				if (!storeName) storeName = cleanString(customer.store_name)
+			}
+		}
 		const payload = {
 			user_id: this.uid,
 			customer_id: customerId,
@@ -96,6 +110,8 @@ module.exports = {
 			count,
 			note: consume.note || consume.remark || '',
 			consumed_at: consumedAt,
+			store_id: storeId,
+			store_name: storeName,
 			create_time: now,
 			update_time: now
 		}
