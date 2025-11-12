@@ -10,6 +10,8 @@ if (!Math) {
   "./pages/my-customers/edit.js";
   "./pages/purchases/create.js";
   "./pages/purchases/consume.js";
+  "./pages/bookings/create.js";
+  "./pages/bookings/index.js";
   "./pages/my-shops/index.js";
   "./uni_modules/uni-id-pages/pages/userinfo/deactivate/deactivate.js";
   "./uni_modules/uni-id-pages/pages/userinfo/userinfo.js";

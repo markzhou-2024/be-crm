@@ -2,6 +2,7 @@
 const common_vendor = require("../../common/vendor.js");
 const api_customers = require("../../api/customers.js");
 const api_purchases = require("../../api/purchases.js");
+const api_bookings = require("../../api/bookings.js");
 const _sfc_main = {
   data() {
     return {
@@ -19,8 +20,20 @@ const _sfc_main = {
       activeTab: "purchase",
       purchaseHistory: [],
       consumeHistory: [],
-      stats: { total_spend: 0, visit_count: 0 }
+      stats: { total_spend: 0, visit_count: 0 },
+      bookingList: [],
+      bookingLoading: false,
+      bookingLoaded: false,
+      bookingStatusUpdating: "",
+      isRefreshing: false
     };
+  },
+  watch: {
+    activeTab(newVal) {
+      if (newVal === "booking") {
+        this.ensureBookingLoaded();
+      }
+    }
   },
   onLoad(query) {
     this.id = query && query.id || "";
@@ -34,6 +47,9 @@ const _sfc_main = {
   onShow() {
     if (this.id) {
       this.loadCustomerStats();
+      if (this.activeTab === "booking" && this.bookingLoaded) {
+        this.loadBookings({ force: true, silent: true });
+      }
     }
   },
   methods: {
@@ -82,7 +98,7 @@ const _sfc_main = {
         this.purchaseHistory = list;
         this.decorateConsumeRecords();
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:181", "load purchase failed", err);
+        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:232", "load purchase failed", err);
         this.purchaseHistory = [];
       }
     },
@@ -93,7 +109,7 @@ const _sfc_main = {
         this.consumeHistory = this.normalizeCloudList(res);
         this.decorateConsumeRecords();
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:192", "load consume failed", err);
+        common_vendor.index.__f__("log", "at pages/my-customers/detail.vue:243", "load consume failed", err);
         this.consumeHistory = [];
       }
     },
@@ -143,8 +159,158 @@ const _sfc_main = {
         }
       });
     },
-    comingSoon(label) {
-      common_vendor.index.showToast({ title: `${label}功能开发中`, icon: "none" });
+    goBookingCreate() {
+      const cid = this.customer._id || this.customer.id || this.id;
+      if (!cid) {
+        common_vendor.index.showToast({ title: "缺少客户ID", icon: "none" });
+        return;
+      }
+      const name = encodeURIComponent(this.customer.name || "");
+      common_vendor.index.navigateTo({
+        url: `/pages/bookings/create?customer_id=${cid}&customer_name=${name}`,
+        events: {
+          bookingCreated: () => {
+            this.activeTab = "booking";
+            this.loadBookings({ force: true });
+          }
+        }
+      });
+    },
+    async handlePageRefresh() {
+      if (this.isRefreshing)
+        return;
+      this.isRefreshing = true;
+      try {
+        await this.loadData();
+        if (this.activeTab === "booking" || this.bookingLoaded) {
+          await this.loadBookings({ force: true, silent: true });
+        }
+      } finally {
+        setTimeout(() => {
+          this.isRefreshing = false;
+        }, 200);
+      }
+    },
+    ensureBookingLoaded() {
+      if (!this.bookingLoaded && !this.bookingLoading) {
+        this.loadBookings();
+      }
+    },
+    async loadBookings(options = {}) {
+      if (!this.id)
+        return;
+      const { force = false, silent = false } = options;
+      if (this.bookingLoading)
+        return;
+      if (this.bookingLoaded && !force)
+        return;
+      const shouldShowLoading = !this.bookingLoaded || !silent;
+      if (shouldShowLoading) {
+        this.bookingLoading = true;
+      }
+      try {
+        const list = await api_bookings.listBookingsByCustomer({ customer_id: this.id });
+        const next = (list || []).slice().sort((a, b) => {
+          return Number(b.start_ts || 0) - Number(a.start_ts || 0);
+        });
+        this.bookingList = next;
+        this.bookingLoaded = true;
+      } catch (err) {
+        if (!silent) {
+          common_vendor.index.showToast({ title: (err == null ? void 0 : err.errMsg) || (err == null ? void 0 : err.message) || "预约加载失败", icon: "none" });
+        }
+      } finally {
+        if (shouldShowLoading) {
+          this.bookingLoading = false;
+        }
+      }
+    },
+    formatBookingTime(ts) {
+      if (!ts)
+        return "--:--";
+      const date = new Date(Number(ts));
+      if (Number.isNaN(date.getTime()))
+        return "--:--";
+      const h = `${date.getHours()}`.padStart(2, "0");
+      const m = `${date.getMinutes()}`.padStart(2, "0");
+      return `${h}:${m}`;
+    },
+    formatBookingDate(ts) {
+      if (!ts)
+        return "--";
+      const date = new Date(Number(ts));
+      if (Number.isNaN(date.getTime()))
+        return "--";
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${month}月${day}日`;
+    },
+    formatBookingRange(start, end) {
+      const startLabel = this.formatBookingTime(start);
+      const endLabel = end ? this.formatBookingTime(end) : "";
+      return endLabel ? `${startLabel} - ${endLabel}` : startLabel;
+    },
+    statusLabel(status) {
+      const map = { scheduled: "待到店", completed: "已完成", canceled: "已取消" };
+      return map[status] || map.scheduled;
+    },
+    statusClass(status) {
+      return {
+        scheduled: "scheduled",
+        completed: "completed",
+        canceled: "canceled"
+      }[status] || "scheduled";
+    },
+    handleBookingActions(item) {
+      if (!item)
+        return;
+      const options = [];
+      if (item.status !== "completed") {
+        options.push({ label: "标记完成", value: "completed" });
+      }
+      if (item.status !== "canceled") {
+        options.push({ label: "取消预约", value: "canceled" });
+      }
+      if (!options.length)
+        return;
+      common_vendor.index.showActionSheet({
+        itemList: options.map((opt) => opt.label),
+        success: (res) => {
+          const choice = options[res.tapIndex];
+          if (choice) {
+            this.confirmBookingStatus(item, choice.value);
+          }
+        }
+      });
+    },
+    confirmBookingStatus(item, status) {
+      const text = status === "completed" ? "确定将该预约标记为已完成？" : "确定取消该预约吗？";
+      common_vendor.index.showModal({
+        title: "更新预约状态",
+        content: text,
+        success: (res) => {
+          if (res.confirm) {
+            this.applyBookingStatus(item, status);
+          }
+        }
+      });
+    },
+    async applyBookingStatus(item, status) {
+      const bookingId = (item == null ? void 0 : item._id) || (item == null ? void 0 : item.id);
+      if (!bookingId)
+        return;
+      if (this.bookingStatusUpdating)
+        return;
+      this.bookingStatusUpdating = bookingId;
+      try {
+        await api_bookings.updateBookingStatus({ booking_id: bookingId, status });
+        common_vendor.index.showToast({ title: "状态已更新", icon: "success" });
+        await this.loadBookings({ force: true, silent: true });
+      } catch (err) {
+        common_vendor.index.showToast({ title: (err == null ? void 0 : err.errMsg) || (err == null ? void 0 : err.message) || "状态更新失败", icon: "none" });
+      } finally {
+        this.bookingStatusUpdating = "";
+      }
     },
     async saveNotes() {
       try {
@@ -327,17 +493,43 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         g: item._id || item.id
       });
     })
-  } : {}) : $data.activeTab === "booking" ? {} : $data.activeTab === "gallery" ? {} : {
-    x: $data.notesDraft,
-    y: common_vendor.o(($event) => $data.notesDraft = $event.detail.value),
-    z: common_vendor.o((...args) => $options.saveNotes && $options.saveNotes(...args))
+  } : {}) : $data.activeTab === "booking" ? common_vendor.e({
+    w: $data.bookingLoading && !$data.bookingList.length
+  }, $data.bookingLoading && !$data.bookingList.length ? {} : $data.bookingList.length ? {
+    y: common_vendor.f($data.bookingList, (item, k0, i0) => {
+      return common_vendor.e({
+        a: common_vendor.t($options.formatBookingTime(item.start_ts)),
+        b: common_vendor.t($options.formatBookingDate(item.start_ts)),
+        c: common_vendor.t(item.service_name || "未命名服务"),
+        d: common_vendor.t(item.store_name || "未选择门店"),
+        e: common_vendor.t($options.formatBookingRange(item.start_ts, item.end_ts)),
+        f: item.staff_name
+      }, item.staff_name ? {
+        g: common_vendor.t(item.staff_name)
+      } : {}, {
+        h: common_vendor.t($options.statusLabel(item.status)),
+        i: common_vendor.n($options.statusClass(item.status)),
+        j: item._id || item.id,
+        k: common_vendor.o(($event) => $options.handleBookingActions(item), item._id || item.id),
+        l: common_vendor.o(($event) => $options.handleBookingActions(item), item._id || item.id),
+        m: $data.bookingStatusUpdating === (item._id || item.id) ? 1 : ""
+      });
+    })
+  } : {}, {
+    x: $data.bookingList.length
+  }) : $data.activeTab === "gallery" ? {} : {
+    A: $data.notesDraft,
+    B: common_vendor.o(($event) => $data.notesDraft = $event.detail.value),
+    C: common_vendor.o((...args) => $options.saveNotes && $options.saveNotes(...args))
   }, {
     r: $data.activeTab === "consume",
     v: $data.activeTab === "booking",
-    w: $data.activeTab === "gallery",
-    A: common_vendor.o((...args) => $options.goPurchase && $options.goPurchase(...args)),
-    B: common_vendor.o((...args) => $options.goConsume && $options.goConsume(...args)),
-    C: common_vendor.o(($event) => $options.comingSoon("预约"))
+    z: $data.activeTab === "gallery",
+    D: $data.isRefreshing,
+    E: common_vendor.o((...args) => $options.handlePageRefresh && $options.handlePageRefresh(...args)),
+    F: common_vendor.o((...args) => $options.goPurchase && $options.goPurchase(...args)),
+    G: common_vendor.o((...args) => $options.goConsume && $options.goConsume(...args)),
+    H: common_vendor.o((...args) => $options.goBookingCreate && $options.goBookingCreate(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-20dde889"]]);

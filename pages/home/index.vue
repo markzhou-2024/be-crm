@@ -64,7 +64,7 @@ export default {
       return Number(n || 0).toLocaleString('zh-CN')
     },
     goAll () {
-      uni.navigateTo({ url: '/pages/appointments/index' })
+      uni.navigateTo({ url: '/pages/bookings/index' })
     },
     goDetail (item) {
       uni.navigateTo({ url: `/pages/appointments/detail?id=${item.id}` })

@@ -44,6 +44,18 @@
 			}
 		},
 		{
+			"path": "pages/bookings/create",
+			"style": {
+				"navigationBarTitleText": "新增预约"
+			}
+		},
+		{
+			"path": "pages/bookings/index",
+			"style": {
+				"navigationBarTitleText": "全部预约"
+			}
+		},
+		{
 			"path": "pages/my-shops/index",
 			"style": {
 				"navigationBarTitleText": "负责的店"

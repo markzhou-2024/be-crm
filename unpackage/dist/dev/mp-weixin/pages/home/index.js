@@ -37,7 +37,7 @@ const _sfc_main = {
       return Number(n || 0).toLocaleString("zh-CN");
     },
     goAll() {
-      common_vendor.index.navigateTo({ url: "/pages/appointments/index" });
+      common_vendor.index.navigateTo({ url: "/pages/bookings/index" });
     },
     goDetail(item) {
       common_vendor.index.navigateTo({ url: `/pages/appointments/detail?id=${item.id}` });
