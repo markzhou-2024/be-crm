@@ -1,1 +1,0 @@
-<view class="hd data-v-2446b15d"><text class="title data-v-2446b15d">{{a}}</text><text wx:if="{{b}}" class="more data-v-2446b15d" bindtap="{{d}}">{{c}} &gt;</text></view>

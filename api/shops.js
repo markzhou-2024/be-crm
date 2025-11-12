@@ -15,3 +15,8 @@ export async function fetchShops() {
   const res = await shopsService.listMyShops()
   return normalizeResponse(res)
 }
+
+export async function fetchShopHistory(limit = 50) {
+  const res = await shopsService.listHistoryShops({ limit })
+  return normalizeResponse(res)
+}

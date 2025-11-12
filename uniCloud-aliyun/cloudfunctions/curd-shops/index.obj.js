@@ -128,6 +128,11 @@ module.exports = {
 		}).orderBy('create_time', 'desc').get()
 		return data || []
 	},
+	async listHistoryShops (options = {}) {
+		const limit = Number(options.limit) > 0 ? Math.min(Number(options.limit), 200) : 50
+		const { data } = await shopsCollection.orderBy('create_time', 'desc').limit(limit).get()
+		return data || []
+	},
 	async getShopById (id) {
 		assertAuthed(this)
 		if (!id) {

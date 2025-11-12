@@ -2,7 +2,6 @@
   "navigationBarTitleText": "首页",
   "backgroundColor": "#F7F7F7",
   "usingComponents": {
-    "app-card": "../../src/components/ui/AppCard",
-    "section-header": "../../src/components/ui/SectionHeader"
+    "app-card": "../../src/components/ui/AppCard"
   }
 }

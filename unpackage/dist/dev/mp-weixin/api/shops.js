@@ -17,5 +17,10 @@ async function fetchShops() {
   const res = await shopsService.listMyShops();
   return normalizeResponse(res);
 }
+async function fetchShopHistory(limit = 50) {
+  const res = await shopsService.listHistoryShops({ limit });
+  return normalizeResponse(res);
+}
+exports.fetchShopHistory = fetchShopHistory;
 exports.fetchShops = fetchShops;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/api/shops.js.map
