@@ -2,7 +2,6 @@
   <view class="page">
     <view class="greet-row">
       <view class="greet">今天也要加油哦 ✨</view>
-      <view class="month-chip">{{ displayMonth }}</view>
     </view>
 
     <view class="tasks-section">
@@ -21,8 +20,7 @@
           <view class="task-main">
             <text class="task-time">{{ task.time }}</text>
             <view class="task-body">
-              <text class="task-title">{{ task.title }}</text>
-              <text v-if="task.store_name" class="task-store">{{ task.store_name }}</text>
+                         <text v-if="task.store_name" class="task-store">{{ task.store_name }}</text>
               <text v-if="task.note" class="task-note">{{ task.note }}</text>
             </view>
           </view>
@@ -414,7 +412,7 @@ export default {
 .form-actions button::after { border:none; }
 .week-row { display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:13px; color:#99a0b3; padding:10px 0; max-width:720rpx; margin:0 auto; }
 .day-grid { display:grid; grid-template-columns:repeat(7,102rpx); justify-content:center; border:1px solid #eef0f6; border-bottom:none; border-right:none; margin:0 auto; }
-.day-cell { width:102rpx; min-height:100px; padding:8px 6px; position:relative; display:flex; flex-direction:column; border-right:1px solid #eef0f6; border-bottom:1px solid #eef0f6; background:#fff; box-sizing:border-box; }
+.day-cell { width:102rpx; min-height:60px; padding:8px 6px; position:relative; display:flex; flex-direction:column; border-right:1px solid #eef0f6; border-bottom:1px solid #eef0f6; background:#fff; box-sizing:border-box; }
 .day-cell:nth-child(7n) { border-right:none; }
 .day-cell:nth-last-child(-n+7) { border-bottom:none; }
 .day-cell.dim .day-num { color:#c0c4d4; }
@@ -432,7 +430,7 @@ export default {
 .tasks-title { font-size:17px; font-weight:600; color:#111; margin:0 4px 4px; display:block; }
 .tasks-hint { font-size:12px; color:#99a0b3; margin:4px 4px 8px; display:block; text-align:right; }
 .empty { text-align:center; color:#6F6F73; font-size:13px; padding:22px 0; }
-.task-item { display:flex; flex-direction:column; padding:10px 12px; border-bottom:1px solid #f0f0f0; min-height:68px; }
+.task-item { display:flex; flex-direction:column; padding:10px 12px; border-bottom:1px solid #f0f0f0; min-height:18px;height: auto; }
 .task-item:last-child { border-bottom:none; }
 .task-main { display:flex; gap:12px; align-items:flex-start; }
 .task-time { font-size:16px; font-weight:600; color:#caa265; min-width:60px; }

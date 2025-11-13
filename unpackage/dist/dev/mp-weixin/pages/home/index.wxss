@@ -107,7 +107,7 @@
 }
 .day-cell.data-v-4978fed5 {
   width: 102rpx;
-  min-height: 100px;
+  min-height: 60px;
   padding: 8px 6px;
   position: relative;
   display: flex;
@@ -210,7 +210,8 @@
   flex-direction: column;
   padding: 10px 12px;
   border-bottom: 1px solid #f0f0f0;
-  min-height: 68px;
+  min-height: 18px;
+  height: auto;
 }
 .task-item.data-v-4978fed5:last-child {
   border-bottom: none;

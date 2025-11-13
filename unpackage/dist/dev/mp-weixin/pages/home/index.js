@@ -62,7 +62,7 @@ const _sfc_main = {
       try {
         this.allTasks = await src_services_schedule.listAllTasks({ start: this.calendarRange.start, end: this.calendarRange.end });
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/home/index.vue:168", "load calendar failed", err);
+        common_vendor.index.__f__("log", "at pages/home/index.vue:166", "load calendar failed", err);
         this.allTasks = [];
         const msg = (err == null ? void 0 : err.code) === 401 || (err == null ? void 0 : err.errCode) === 401 ? "请登录后查看日程" : (err == null ? void 0 : err.message) || "加载日历失败";
         common_vendor.index.showToast({ title: msg, icon: "none" });
@@ -81,7 +81,7 @@ const _sfc_main = {
         }));
         this.storeOptions = [{ label: "请选择门店", value: "" }, ...mapped];
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/home/index.vue:188", "fetch shops failed", err);
+        common_vendor.index.__f__("log", "at pages/home/index.vue:186", "fetch shops failed", err);
         this.storeOptions = [{ label: "请选择门店", value: "" }];
       }
     },
@@ -306,41 +306,39 @@ if (!Array) {
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   var _a;
   return common_vendor.e({
-    a: common_vendor.t($data.displayMonth),
-    b: common_vendor.t($options.selectedDateLabel),
-    c: !$data.dayTasks.length
+    a: common_vendor.t($options.selectedDateLabel),
+    b: !$data.dayTasks.length
   }, !$data.dayTasks.length ? {} : {}, {
-    d: common_vendor.f($data.dayTasks, (task, k0, i0) => {
+    c: common_vendor.f($data.dayTasks, (task, k0, i0) => {
       return common_vendor.e({
         a: common_vendor.t(task.time),
-        b: common_vendor.t(task.title),
-        c: task.store_name
+        b: task.store_name
       }, task.store_name ? {
-        d: common_vendor.t(task.store_name)
+        c: common_vendor.t(task.store_name)
       } : {}, {
-        e: task.note
+        d: task.note
       }, task.note ? {
-        f: common_vendor.t(task.note)
+        e: common_vendor.t(task.note)
       } : {}, {
-        g: task.id,
-        h: common_vendor.o(($event) => $options.editTask(task), task.id),
-        i: common_vendor.o(($event) => $options.onTaskTouchStart($event, task), task.id),
-        j: common_vendor.o(($event) => $options.onTaskTouchEnd($event, task), task.id)
+        f: task.id,
+        g: common_vendor.o(($event) => $options.editTask(task), task.id),
+        h: common_vendor.o(($event) => $options.onTaskTouchStart($event, task), task.id),
+        i: common_vendor.o(($event) => $options.onTaskTouchEnd($event, task), task.id)
       });
     }),
-    e: common_vendor.p({
+    d: common_vendor.p({
       padding: "0"
     }),
-    f: common_vendor.o(($event) => $options.changeMonth(-1)),
-    g: common_vendor.t($data.displayMonth),
-    h: common_vendor.o(($event) => $options.changeMonth(1)),
-    i: common_vendor.f($data.weekLabels, (day, k0, i0) => {
+    e: common_vendor.o(($event) => $options.changeMonth(-1)),
+    f: common_vendor.t($data.displayMonth),
+    g: common_vendor.o(($event) => $options.changeMonth(1)),
+    h: common_vendor.f($data.weekLabels, (day, k0, i0) => {
       return {
         a: common_vendor.t(day),
         b: day
       };
     }),
-    j: common_vendor.f($data.calendarDays, (day, k0, i0) => {
+    i: common_vendor.f($data.calendarDays, (day, k0, i0) => {
       return common_vendor.e({
         a: common_vendor.t(day.day),
         b: day.isToday
@@ -364,22 +362,22 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         l: common_vendor.o(($event) => $options.quickCreate(day), day.date)
       });
     }),
-    k: $data.formVisible
+    j: $data.formVisible
   }, $data.formVisible ? {
-    l: common_vendor.t($data.editingTaskId ? "编辑任务" : "创建任务"),
-    m: common_vendor.t($data.selectedDate),
-    n: common_vendor.t(((_a = $data.storeOptions[$data.storePickerIndex]) == null ? void 0 : _a.label) || "请选择门店"),
-    o: $data.storeOptions,
-    p: $data.storePickerIndex,
-    q: common_vendor.o((...args) => $options.onStoreChange && $options.onStoreChange(...args)),
-    r: common_vendor.t($data.formData.time),
-    s: $data.formData.time,
-    t: common_vendor.o((...args) => $options.onTimeChange && $options.onTimeChange(...args)),
-    v: $data.formData.note,
-    w: common_vendor.o(($event) => $data.formData.note = $event.detail.value),
-    x: common_vendor.o((...args) => $options.closeForm && $options.closeForm(...args)),
-    y: common_vendor.t($data.editingTaskId ? "保存" : "创建"),
-    z: common_vendor.o((...args) => $options.submitTask && $options.submitTask(...args))
+    k: common_vendor.t($data.editingTaskId ? "编辑任务" : "创建任务"),
+    l: common_vendor.t($data.selectedDate),
+    m: common_vendor.t(((_a = $data.storeOptions[$data.storePickerIndex]) == null ? void 0 : _a.label) || "请选择门店"),
+    n: $data.storeOptions,
+    o: $data.storePickerIndex,
+    p: common_vendor.o((...args) => $options.onStoreChange && $options.onStoreChange(...args)),
+    q: common_vendor.t($data.formData.time),
+    r: $data.formData.time,
+    s: common_vendor.o((...args) => $options.onTimeChange && $options.onTimeChange(...args)),
+    t: $data.formData.note,
+    v: common_vendor.o(($event) => $data.formData.note = $event.detail.value),
+    w: common_vendor.o((...args) => $options.closeForm && $options.closeForm(...args)),
+    x: common_vendor.t($data.editingTaskId ? "保存" : "创建"),
+    y: common_vendor.o((...args) => $options.submitTask && $options.submitTask(...args))
   } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-4978fed5"]]);
