@@ -40,6 +40,11 @@ const _sfc_main = {
     await this.refreshTasks();
   },
   methods: {
+    formatPillLabel(text) {
+      const source = (text || "").trim() || "待办";
+      const glyphs = Array.from(source);
+      return glyphs.slice(0, 3).join("");
+    },
     formatDate(date) {
       return formatDateValue(date);
     },
@@ -62,7 +67,7 @@ const _sfc_main = {
       try {
         this.allTasks = await src_services_schedule.listAllTasks({ start: this.calendarRange.start, end: this.calendarRange.end });
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/home/index.vue:166", "load calendar failed", err);
+        common_vendor.index.__f__("log", "at pages/home/index.vue:171", "load calendar failed", err);
         this.allTasks = [];
         const msg = (err == null ? void 0 : err.code) === 401 || (err == null ? void 0 : err.errCode) === 401 ? "请登录后查看日程" : (err == null ? void 0 : err.message) || "加载日历失败";
         common_vendor.index.showToast({ title: msg, icon: "none" });
@@ -81,7 +86,7 @@ const _sfc_main = {
         }));
         this.storeOptions = [{ label: "请选择门店", value: "" }, ...mapped];
       } catch (err) {
-        common_vendor.index.__f__("log", "at pages/home/index.vue:186", "fetch shops failed", err);
+        common_vendor.index.__f__("log", "at pages/home/index.vue:191", "fetch shops failed", err);
         this.storeOptions = [{ label: "请选择门店", value: "" }];
       }
     },
@@ -102,7 +107,7 @@ const _sfc_main = {
         current.setDate(start.getDate() + i);
         const dateStr = this.formatDate(current);
         const dayTasks = taskMap[dateStr] || [];
-        const pills = dayTasks.slice(0, 2).map((item) => item.store_name || item.title || "待办");
+        const pills = dayTasks.slice(0, 2).map((item) => this.formatPillLabel(item.store_name || item.title || "待办"));
         days.push({
           date: dateStr,
           day: current.getDate(),
@@ -285,6 +290,12 @@ const _sfc_main = {
           }
         }
       });
+    },
+    shortPill(text) {
+      if (!text)
+        return "";
+      const str = String(text);
+      return str.length > 3 ? str.slice(0, 3) : str;
     }
   },
   computed: {
@@ -345,7 +356,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       }, day.isToday ? {} : {}, {
         c: common_vendor.f(day.pills, (pill, idx, i1) => {
           return {
-            a: common_vendor.t(pill),
+            a: common_vendor.t($options.shortPill(pill)),
             b: idx
           };
         }),

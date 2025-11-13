@@ -7293,7 +7293,7 @@ function isConsoleWritable() {
   return isWritable;
 }
 function initRuntimeSocketService() {
-  const hosts = "127.0.0.1,192.168.31.96";
+  const hosts = "127.0.0.1,192.168.223.2";
   const port = "8090";
   const id = "mp-weixin_M6Lfj0";
   const lazy = typeof swan !== "undefined";
@@ -8816,7 +8816,7 @@ class S {
 function T(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","192.168.31.96"],"servePort":7001,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","/Applications/HBuilderX-Alpha.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"aliyun","spaceName":"crm-date","spaceId":"mp-fdba21ff-bad9-47b6-9972-a95e35f46ea2","clientSecret":"SEQ0WVVz3pdX38TL3LEHxw==","endpoint":"https://api.next.bspapp.com"}]') || [];
+const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","192.168.223.2"],"servePort":7001,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","/Applications/HBuilderX-Alpha.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"aliyun","spaceName":"crm-date","spaceId":"mp-fdba21ff-bad9-47b6-9972-a95e35f46ea2","clientSecret":"SEQ0WVVz3pdX38TL3LEHxw==","endpoint":"https://api.next.bspapp.com"}]') || [];
 let N = "";
 try {
   N = "__UNI__4B38155";

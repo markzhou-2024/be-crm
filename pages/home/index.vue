@@ -51,7 +51,7 @@
             <text class="pill-today" v-if="day.isToday">今</text>
           </view>
           <view class="pill-group">
-            <text class="pill" v-for="(pill, idx) in day.pills" :key="idx">{{ pill }}</text>
+            <text class="pill" v-for="(pill, idx) in day.pills" :key="idx">{{ shortPill(pill) }}</text>
             <text class="pill more" v-if="day.more">+{{ day.more }}</text>
           </view>
         </view>
@@ -141,6 +141,11 @@ export default {
     await this.refreshTasks()
   },
   methods: {
+    formatPillLabel (text) {
+      const source = (text || '').trim() || '待办'
+      const glyphs = Array.from(source)
+      return glyphs.slice(0, 3).join('')
+    },
     formatDate (date) {
       return formatDateValue(date)
     },
@@ -204,7 +209,7 @@ export default {
         current.setDate(start.getDate() + i)
         const dateStr = this.formatDate(current)
         const dayTasks = taskMap[dateStr] || []
-        const pills = dayTasks.slice(0, 2).map(item => item.store_name || item.title || '待办')
+        const pills = dayTasks.slice(0, 2).map(item => this.formatPillLabel(item.store_name || item.title || '待办'))
         days.push({
           date: dateStr,
           day: current.getDate(),
@@ -383,7 +388,13 @@ export default {
           }
         }
       })
-    }
+    },
+    shortPill(text) {
+	  if (!text) return ''
+	    const str = String(text)
+	    // 最多保留 3 个字
+	  return str.length > 3 ? str.slice(0, 3) : str
+	  }
   },
   computed: {
     selectedDateLabel () {
@@ -422,8 +433,28 @@ export default {
 .day-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
 .day-num { font-size:16px; font-weight:600; color:#1c1c1e; }
 .pill-today { font-size:12px; color:#5b7eff; border:1px solid rgba(91,126,255,0.3); border-radius:10px; padding:0 6px; line-height:18px; }
-.pill-group { display:flex; flex-direction:column; gap:4px; }
-.pill { font-size:11px; color:#fff; background:#5b7eff; border-radius:12px; padding:2px 6px; text-align:center; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pill-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.pill {
+  width: 90rpx;              // 固定宽度，比 102rpx 略小一点
+  box-sizing: border-box;
+  padding: 4rpx 6rpx;
+  text-align: center;
+
+  font-size: 10px;           // 比之前 11px 略缩小一点
+  line-height: 20rpx;
+
+  color: #fff;
+  background: #5b7eff;
+  border-radius: 999rpx;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;   // 保险起见，万一你以后想显示 4 字以上
+}
 .pill.more { background:#ff9f43; }
 .calendar-hint { display:block; margin-top:10px; font-size:12px; color:#8e8e93; text-align:center; }
 .tasks-section { margin-bottom:24px; }
