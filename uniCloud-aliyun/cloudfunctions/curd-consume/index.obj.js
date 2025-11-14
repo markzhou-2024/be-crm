@@ -95,7 +95,10 @@ module.exports = {
 			const { data: customerDocs } = await customersCollection.where({
 				_id: customerId,
 				user_id: this.uid
-			}).field('store_id,store_name').limit(1).get()
+			}).field({
+				store_id: true,
+				store_name: true
+			}).limit(1).get()
 			const customer = customerDocs && customerDocs[0]
 			if (customer) {
 				if (!storeId) storeId = cleanString(customer.store_id)

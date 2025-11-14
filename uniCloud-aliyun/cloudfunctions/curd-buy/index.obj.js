@@ -1,4 +1,4 @@
-﻿const uniID = require('uni-id-common')
+const uniID = require('uni-id-common')
 const db = uniCloud.database()
 const buyCollection = db.collection('buy')
 const customersCollection = db.collection('customers')
@@ -71,7 +71,10 @@ module.exports = {
     const { data: customerDocs } = await customersCollection.where({
       _id: customerId,
       user_id: this.uid
-    }).field('store_id,store_name').limit(1).get()
+    }).field({
+      store_id: true,
+      store_name: true
+    }).limit(1).get()
     const customerInfo = customerDocs && customerDocs[0]
     if (customerInfo) {
       if (!storeId) storeId = (customerInfo.store_id || '').trim()
