@@ -78,42 +78,6 @@
         </view>
         <view v-else class="placeholder-list"><text class="placeholder-title">暂无消耗记录</text></view>
       </view>
-      <view class="tab-panel" v-else-if="activeTab === 'booking'">
-        <view class="booking-toolbar">
-          <button class="link-btn" @tap="goNextWeek">查看周计划</button>
-          <button class="link-btn ghost" @tap="goCalendar">月历概览</button>
-        </view>
-        <view v-if="bookingLoading && !bookingList.length" class="placeholder-list"><text class="placeholder-title">预约加载中...</text></view>
-        <view v-else-if="bookingList.length" class="booking-list">
-          <view
-            class="booking-card"
-            v-for="item in bookingList"
-            :key="item._id || item.id"
-            @longpress="handleBookingActions(item)"
-            @tap="handleBookingActions(item)"
-            :class="{ updating: bookingStatusUpdating === (item._id || item.id) }"
-          >
-            <view class="booking-time">
-              <text class="booking-time-main">{{ formatBookingTime(item.start_ts) }}</text>
-              <text class="booking-date">{{ formatBookingDate(item.start_ts) }}</text>
-            </view>
-            <view class="booking-info">
-              <view class="booking-title">{{ item.service_name || '未命名服务' }}</view>
-              <view class="booking-sub">{{ item.store_name || '未选择门店' }}</view>
-              <view class="booking-meta">
-                <text>{{ formatBookingRange(item.start_ts, item.end_ts) }}</text>
-                <text v-if="item.staff_name" class="booking-staff">{{ item.staff_name }}</text>
-              </view>
-            </view>
-            <view class="status-pill" :class="statusClass(item.status)">
-              {{ statusLabel(item.status) }}
-            </view>
-            <text class="booking-arrow">&gt;</text>
-          </view>
-          <text class="booking-hint">长按预约可标记完成或取消</text>
-        </view>
-        <view v-else class="placeholder-list"><text class="placeholder-title">暂无预约记录</text></view>
-      </view>
       <view class="tab-panel" v-else-if="activeTab === 'gallery'">
         <view class="placeholder-list"><text class="placeholder-line">图库占位</text></view>
       </view>
@@ -128,7 +92,6 @@
       <view class="cta-buttons">
         <button class="btn fab-btn" @tap="goPurchase">＋ 购买</button>
         <button class="btn fab-btn" @tap="goConsume">＋ 消耗</button>
-        <button class="btn fab-btn gold" @tap="goBookingCreate">＋ 预约</button>
       </view>
     </view>
   </view>
@@ -138,7 +101,6 @@
 // @ts-nocheck
 import { getCustomerById, updateCustomer, deleteCustomer as deleteCustomerApi } from '@/api/customers.js'
 import { listPurchases } from '@/api/purchases.js'
-import { listBookingsByCustomer, updateBookingStatus as updateBookingStatusApi } from '@/api/bookings.js'
 import { fetchCustomerStoreVisitCount } from '@/api/analytics.js'
 
 export default {
@@ -151,7 +113,6 @@ export default {
       tabs: [
         { label: '购买', value: 'purchase' },
         { label: '消耗', value: 'consume' },
-        { label: '预约', value: 'booking' },
         { label: '图库', value: 'gallery' },
         { label: '备注', value: 'notes' }
       ],
@@ -159,19 +120,8 @@ export default {
       purchaseHistory: [],
       consumeHistory: [],
       stats: { total_spend: 0, visit_count: 0 },
-      bookingList: [],
-      bookingLoading: false,
-      bookingLoaded: false,
-      bookingStatusUpdating: '',
       isRefreshing: false,
       storeVisitCount: null
-    }
-  },
-  watch: {
-    activeTab(newVal) {
-      if (newVal === 'booking') {
-        this.ensureBookingLoaded()
-      }
     }
   },
   onLoad(query) {
@@ -186,9 +136,6 @@ export default {
   onShow() {
     if (this.id) {
       this.loadCustomerStats()
-      if (this.activeTab === 'booking' && this.bookingLoaded) {
-        this.loadBookings({ force: true, silent: true })
-      }
       this.loadStoreVisitCount()
     }
   },
@@ -298,72 +245,15 @@ export default {
         }
       })
     },
-    goNextWeek() {
-      uni.navigateTo({ url: '/pages/appointments/next-week' })
-    },
-    goCalendar() {
-      uni.navigateTo({ url: '/pages/calendar/index' })
-    },
-    goBookingCreate() {
-      const cid = this.customer._id || this.customer.id || this.id
-      if (!cid) {
-        uni.showToast({ title: '缺少客户ID', icon: 'none' })
-        return
-      }
-      const name = encodeURIComponent(this.customer.name || '')
-      uni.navigateTo({
-        url: `/pages/bookings/create?customer_id=${cid}&customer_name=${name}`,
-        events: {
-          bookingCreated: () => {
-            this.activeTab = 'booking'
-            this.loadBookings({ force: true })
-          }
-        }
-      })
-    },
     async handlePageRefresh() {
       if (this.isRefreshing) return
       this.isRefreshing = true
       try {
         await this.loadData()
-        if (this.activeTab === 'booking' || this.bookingLoaded) {
-          await this.loadBookings({ force: true, silent: true })
-        }
       } finally {
         setTimeout(() => {
           this.isRefreshing = false
         }, 200)
-      }
-    },
-    ensureBookingLoaded() {
-      if (!this.bookingLoaded && !this.bookingLoading) {
-        this.loadBookings()
-      }
-    },
-    async loadBookings(options = {}) {
-      if (!this.id) return
-      const { force = false, silent = false } = options
-      if (this.bookingLoading) return
-      if (this.bookingLoaded && !force) return
-      const shouldShowLoading = !this.bookingLoaded || !silent
-      if (shouldShowLoading) {
-        this.bookingLoading = true
-      }
-      try {
-        const list = await listBookingsByCustomer({ customer_id: this.id })
-        const next = (list || []).slice().sort((a, b) => {
-          return Number(b.start_ts || 0) - Number(a.start_ts || 0)
-        })
-        this.bookingList = next
-        this.bookingLoaded = true
-      } catch (err) {
-        if (!silent) {
-          uni.showToast({ title: err?.errMsg || err?.message || '预约加载失败', icon: 'none' })
-        }
-      } finally {
-        if (shouldShowLoading) {
-          this.bookingLoading = false
-        }
       }
     },
     async loadStoreVisitCount() {
@@ -382,85 +272,6 @@ export default {
         } else {
           this.storeVisitCount = null
         }
-      }
-    },
-    formatBookingTime(ts) {
-      if (!ts) return '--:--'
-      const date = new Date(Number(ts))
-      if (Number.isNaN(date.getTime())) return '--:--'
-      const h = `${date.getHours()}`.padStart(2, '0')
-      const m = `${date.getMinutes()}`.padStart(2, '0')
-      return `${h}:${m}`
-    },
-    formatBookingDate(ts) {
-      if (!ts) return '--'
-      const date = new Date(Number(ts))
-      if (Number.isNaN(date.getTime())) return '--'
-      const month = date.getMonth() + 1
-      const day = date.getDate()
-      return `${month}月${day}日`
-    },
-    formatBookingRange(start, end) {
-      const startLabel = this.formatBookingTime(start)
-      const endLabel = end ? this.formatBookingTime(end) : ''
-      return endLabel ? `${startLabel} - ${endLabel}` : startLabel
-    },
-    statusLabel(status) {
-      const map = { scheduled: '待到店', completed: '已完成', canceled: '已取消' }
-      return map[status] || map.scheduled
-    },
-    statusClass(status) {
-      return {
-        scheduled: 'scheduled',
-        completed: 'completed',
-        canceled: 'canceled'
-      }[status] || 'scheduled'
-    },
-    handleBookingActions(item) {
-      if (!item) return
-      const options = []
-      if (item.status !== 'completed') {
-        options.push({ label: '标记完成', value: 'completed' })
-      }
-      if (item.status !== 'canceled') {
-        options.push({ label: '取消预约', value: 'canceled' })
-      }
-      if (!options.length) return
-      uni.showActionSheet({
-        itemList: options.map(opt => opt.label),
-        success: res => {
-          const choice = options[res.tapIndex]
-          if (choice) {
-            this.confirmBookingStatus(item, choice.value)
-          }
-        }
-      })
-    },
-    confirmBookingStatus(item, status) {
-      const text = status === 'completed' ? '确定将该预约标记为已完成？' : '确定取消该预约吗？'
-      uni.showModal({
-        title: '更新预约状态',
-        content: text,
-        success: res => {
-          if (res.confirm) {
-            this.applyBookingStatus(item, status)
-          }
-        }
-      })
-    },
-    async applyBookingStatus(item, status) {
-      const bookingId = item?._id || item?.id
-      if (!bookingId) return
-      if (this.bookingStatusUpdating) return
-      this.bookingStatusUpdating = bookingId
-      try {
-        await updateBookingStatusApi({ booking_id: bookingId, status })
-        uni.showToast({ title: '状态已更新', icon: 'success' })
-        await this.loadBookings({ force: true, silent: true })
-      } catch (err) {
-        uni.showToast({ title: err?.errMsg || err?.message || '状态更新失败', icon: 'none' })
-      } finally {
-        this.bookingStatusUpdating = ''
       }
     },
     async saveNotes() {
@@ -637,24 +448,4 @@ export default {
 .fab-btn.gold { background:#caa265; color:#fff; border:none; }
 
 .edit-btn { position:fixed; right:16px; top:12px; color:#caa265; padding:6px 12px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); z-index:11; }
-.booking-list { display:flex; flex-direction:column; gap:12px; }
-.booking-toolbar { display:flex; gap:10px; margin-bottom:12px; }
-.link-btn { flex:1; height:36px; border-radius:18px; background:#caa265; color:#fff; font-size:13px; }
-.link-btn.ghost { background:#fff; color:#caa265; border:1px solid #eedfc4; }
-.booking-card { display:flex; align-items:flex-start; background:#fdfdfd; border-radius:22px; padding:14px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.04); }
-.booking-card.updating { opacity:0.6; }
-.booking-time { width:80px; }
-.booking-time-main { font-size:22px; font-weight:600; color:#111; }
-.booking-date { font-size:12px; color:#9a9aa0; margin-top:4px; display:block; }
-.booking-info { flex:1; margin-left:12px; }
-.booking-title { font-size:15px; font-weight:600; color:#1c1c1e; }
-.booking-sub { font-size:13px; color:#6f6f73; margin-top:4px; }
-.booking-meta { margin-top:6px; font-size:12px; color:#a1a1a6; display:flex; gap:12px; flex-wrap:wrap; }
-.booking-staff { color:#caa265; }
-.status-pill { padding:4px 12px; border-radius:999px; font-size:12px; font-weight:600; border:1px solid transparent; white-space:nowrap; }
-.status-pill.scheduled { color:#caa265; border-color:#f0dac0; background:rgba(202,162,101,0.08); }
-.status-pill.completed { color:#20c997; border-color:rgba(32,201,151,0.3); background:rgba(32,201,151,0.08); }
-.status-pill.canceled { color:#8e8e93; border-color:#dcdce0; background:#f5f5f7; }
-.booking-arrow { font-size:18px; color:#c7c7cc; margin-left:8px; }
-.booking-hint { margin-top:8px; display:block; text-align:center; color:#a1a1a6; font-size:12px; }
 </style>
