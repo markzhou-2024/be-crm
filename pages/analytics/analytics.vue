@@ -5,45 +5,47 @@
     </view>
 
     <view class="filters">
-      <view class="pill" @tap="pickMonth">
-        <text class="icon">📅</text>
-        <text>{{ displayMonth }}</text>
-        <text class="arrow">▾</text>
-      </view>
+      <picker class="picker-wrapper" mode="date" fields="month" :value="month" @change="onMonthChange">
+        <view class="pill">
+          <text class="icon">📅</text>
+          <text>{{ displayMonth }}</text>
+          <text class="arrow">›</text>
+        </view>
+      </picker>
       <view class="pill" @tap="pickScope">
         <text class="icon">🏬</text>
         <text>{{ scopeLabel }}</text>
-        <text class="arrow">▾</text>
+        <text class="arrow">›</text>
       </view>
       <view class="pill" @tap="pickStore">
         <text class="icon">🏢</text>
         <text>{{ storeLabel }}</text>
-        <text class="arrow">▾</text>
+        <text class="arrow">›</text>
       </view>
     </view>
 
-    <view class="scroll" :class="{ loading: state.loading }">
+    <view class="scroll" :class="{ loading }">
       <view class="section">
         <view class="section-head"><text class="s-icon">🏪</text><text class="s-title">门店数据</text></view>
         <view class="grid-2">
           <view class="card purple">
             <view class="card-head"><text class="card-sub">到客数量</text></view>
-            <view class="card-main"><text class="big">{{ ui.arrivalCount }}</text><text class="unit">次</text></view>
-            <view class="card-foot two-cols"><text>顾问 {{ ui.arrivalByStaff }}</text><text>门店 {{ ui.arrivalByStore }}</text></view>
+            <view class="card-main"><text class="big">{{ storeStats.totalVisits }}</text><text class="unit">次</text></view>
+            <view class="card-foot two-cols"><text>顾问 {{ storeStats.consultantVisits }}</text><text>门店 {{ storeStats.storeStaffVisits }}</text></view>
           </view>
           <view class="card purple light">
             <view class="card-head"><text class="card-sub">新客数量</text></view>
-            <view class="card-main"><text class="big">{{ ui.newCustomer }}</text><text class="unit">人</text></view>
-            <view class="tag">{{ changeText(overview?.storeData?.newCustomersChangeRate) }}</view>
+            <view class="card-main"><text class="big">{{ storeStats.newCustomers }}</text><text class="unit">人</text></view>
+            <view class="tag">{{ changeText(overviewData.storeData.newCustomersChangeRate) }}</view>
           </view>
           <view class="card purple full">
             <view class="card-head between">
               <text class="card-sub">老客数据</text>
-              <view class="tag">活跃率 {{ ui.activeRate }}</view>
+              <view class="tag">活跃率 {{ oldActiveRateText }}</view>
             </view>
-            <view class="card-main"><text class="big">{{ ui.oldCustomer }}</text><text class="unit">人</text></view>
-            <view class="progress"><view class="bar" :style="{ width: ui.progress + '%' }"></view></view>
-            <view class="progress-text">本月到店次数 <text class="strong">{{ ui.arrivalThisMonth }}</text> 次</view>
+            <view class="card-main"><text class="big">{{ storeStats.oldCustomers }}</text><text class="unit">人</text></view>
+            <view class="progress"><view class="bar" :style="{ width: progressWidth + '%' }"></view></view>
+            <view class="progress-text">本月到店次数 <text class="strong">{{ storeStats.oldCustomersVisits }}</text> 次</view>
           </view>
         </view>
       </view>
@@ -54,12 +56,12 @@
           <view class="row between">
             <view>
               <text class="card-sub">顾问到店次数</text>
-              <view class="card-main"><text class="big">{{ ui.staffArrival }}</text><text class="unit">次</text></view>
+              <view class="card-main"><text class="big">{{ consultantStats.visits }}</text><text class="unit">次</text></view>
             </view>
-            <view class="tag">{{ changeText(overview?.consultantData?.visitsChangeRate) }}</view>
+            <view class="tag">{{ changeText(consultantStats.visitsChangeRate) }}</view>
           </view>
           <view class="line"></view>
-          <view class="row"><text class="muted">日历预约：{{ ui.calendarBooked }} 次</text></view>
+          <view class="row"><text class="muted">日历预约：{{ consultantStats.calendarBookings }} 次</text></view>
         </view>
       </view>
 
@@ -69,18 +71,18 @@
           <view class="row between">
             <view>
               <text class="card-sub">总消耗金额</text>
-              <view class="card-main"><text class="big">¥{{ ui.totalAmount }}</text><text class="unit">{{ ui.totalAmountUnit }}</text></view>
+              <view class="card-main"><text class="big">¥{{ formatAmount(financeStats.totalConsumeAmount) }}</text></view>
             </view>
-            <view class="tag">{{ changeText(overview?.financeData?.totalConsumeAmountChangeRate) }}</view>
+            <view class="tag">{{ changeText(overviewData.financeData.totalConsumeAmountChangeRate) }}</view>
           </view>
           <view class="line"></view>
-          <view class="row between"><text class="muted">套盒单价</text><text class="muted">¥{{ ui.unitPrice }}/次</text></view>
-          <view class="row between"><text class="muted">消耗次数</text><text class="muted">{{ ui.consumeTimes }}次</text></view>
+          <view class="row between"><text class="muted">套盒单价</text><text class="muted">¥{{ financeStats.packageUnitPrice.toFixed(2) }}/次</text></view>
+          <view class="row between"><text class="muted">消耗次数</text><text class="muted">{{ financeStats.totalConsumeCount }} 次</text></view>
         </view>
       </view>
 
-      <view class="empty-hint" v-if="!state.loading && !state.error && !hasData">本月暂无数据</view>
-      <view class="empty-hint" v-if="state.error">加载失败</view>
+      <view class="empty-hint" v-if="!loading && !error && !hasData">本月暂无数据</view>
+      <view class="empty-hint" v-if="error">{{ error }}</view>
     </view>
 
     <view class="footer" v-if="!isLogin">
@@ -93,127 +95,190 @@
 import { store } from '@/uni_modules/uni-id-pages/common/store.js'
 import { fetchShops } from '@/api/shops.js'
 
+const statsObj = uniCloud.importObject('stats')
+
+const createEmptyOverview = () => ({
+  month: '',
+  scope: 'mine',
+  storeId: null,
+  storeData: {
+    totalVisits: 0,
+    consultantVisits: 0,
+    storeStaffVisits: 0,
+    newCustomers: 0,
+    oldCustomers: 0,
+    oldCustomersVisits: 0,
+    oldCustomersActiveRate: 0
+  },
+  financeData: {
+    totalConsumeAmount: 0,
+    packageUnitPrice: 0,
+    totalConsumeCount: 0
+  },
+  consultantData: {
+    visits: 0,
+    visitsChangeRate: 0,
+    calendarBookings: 0
+  }
+})
+
 export default {
   data() {
     return {
-      state: { month: '', scope: 'mine', loading: false, error: '', storeId: '' },
-      overview: null,
-      storeOptions: [{ label: '负责门店合计', value: '' }],
-      ui: {
-        arrivalCount: 0, arrivalByStaff: 0, arrivalByStore: 0,
-        newCustomer: 0, oldCustomer: 0, activeRate: '0%', progress: 0, arrivalThisMonth: 0,
-        staffArrival: 0, calendarBooked: 0,
-        totalAmount: '0', totalAmountUnit: '', unitPrice: 0, consumeTimes: 0
-      }
+      month: '',
+      scope: 'mine',
+      storeId: null,
+      loading: false,
+      error: null,
+      overviewData: createEmptyOverview(),
+      storeOptions: [{ label: '负责门店合计', value: null }]
     }
   },
   computed: {
-    userInfo() { return store.userInfo },
-    isLogin() { return !!(this.userInfo && this.userInfo._id) },
-    displayMonth() { return this.state.month },
-    scopeLabel() { return this.state.scope === 'mine' ? '我的门店' : '全局统计' },
+    userInfo() {
+      return store.userInfo
+    },
+    isLogin() {
+      return !!(this.userInfo && this.userInfo._id)
+    },
+    displayMonth() {
+      if (!this.month) return ''
+      const [y, m] = this.month.split('-')
+      return `${y}年${m}月`
+    },
+    scopeLabel() {
+      return this.scope === 'global' ? '全局统计' : '我的门店'
+    },
     storeLabel() {
-      const match = this.storeOptions.find(item => item.value === this.state.storeId)
-      return match ? match.label : '负责门店合计'
+      const target = this.storeOptions.find(item => item.value === this.storeId)
+      return target ? target.label : '负责门店合计'
+    },
+    storeStats() {
+      return this.overviewData.storeData || createEmptyOverview().storeData
+    },
+    financeStats() {
+      return this.overviewData.financeData || createEmptyOverview().financeData
+    },
+    consultantStats() {
+      return this.overviewData.consultantData || createEmptyOverview().consultantData
+    },
+    oldActiveRatePercent() {
+      const rate = Number(this.storeStats.oldCustomersActiveRate || 0)
+      return Math.max(0, Math.min(1, rate)) * 100
+    },
+    oldActiveRateText() {
+      return `${this.oldActiveRatePercent.toFixed(1).replace(/\.0$/, '')}%`
+    },
+    progressWidth() {
+      return Math.round(Math.max(0, Math.min(100, this.oldActiveRatePercent)))
     },
     hasData() {
-      return Object.values({ ...this.ui }).some(v => Number(v) > 0)
+      const s = this.storeStats
+      const f = this.financeStats
+      return [
+        s.totalVisits,
+        s.newCustomers,
+        s.oldCustomers,
+        s.consultantVisits,
+        s.storeStaffVisits,
+        f.totalConsumeAmount,
+        f.totalConsumeCount
+      ].some(v => Number(v) > 0)
     }
   },
   async onLoad() {
-    this.state.month = this.formatMonth(new Date())
     await this.loadStores()
-    await this.fetchData()
+  },
+  onShow() {
+    if (!this.month) {
+      this.month = this.getCurrentMonth()
+    }
+    this.fetchData()
   },
   methods: {
+    getCurrentMonth() {
+      const d = new Date()
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      return `${y}-${m}`
+    },
     async loadStores() {
       try {
         const list = await fetchShops()
-        const mapped = (list || []).map(item => ({
-          label: item.store_name || item.name || '未命名门店',
-          value: item._id || item.id || ''
-        })).filter(item => item.value)
-        this.storeOptions = [{ label: '负责门店合计', value: '' }, ...mapped]
+        const mapped = (list || [])
+          .map(item => ({
+            label: item.store_name || item.name || '未命名门店',
+            value: item._id || item.id || null
+          }))
+          .filter(item => item.value !== null && item.value !== undefined && item.value !== '')
+        this.storeOptions = [{ label: '负责门店合计', value: null }, ...mapped]
       } catch (err) {
-        this.storeOptions = [{ label: '负责门店合计', value: '' }]
+        this.storeOptions = [{ label: '负责门店合计', value: null }]
       }
-    },
-    formatMonth(date) {
-      const d = new Date(date)
-      const y = d.getFullYear()
-      const m = `${d.getMonth() + 1}`.padStart(2, '0')
-      return `${y}-${m}`
     },
     async fetchData() {
+      if (!this.isLogin) {
+        this.error = null
+        this.overviewData = createEmptyOverview()
+        return
+      }
+      if (!this.month) {
+        this.month = this.getCurrentMonth()
+      }
+      this.loading = true
+      this.error = null
       try {
-        this.state.loading = true
-        this.state.error = ''
-        const service = uniCloud.importObject('stats', { customUI: true })
-        const payload = {
-          month: this.state.month,
-          scope: this.state.scope,
-          store_id: this.state.storeId || undefined
+        const res = await statsObj.getMonthlyOverview({
+          month: this.month,
+          scope: this.scope,
+          storeId: this.storeId || undefined
+        })
+        const payload = res && res.data ? res.data : res
+        const normalized = this.normalizeOverview(payload)
+        this.overviewData = normalized
+        if (normalized.scope) {
+          this.scope = normalized.scope
         }
-        const res = await service.getMonthlyOverview(payload)
-        const overview = (res && res.data) || res
-        this.overview = overview && overview.data ? overview.data : overview
-        this.applyOverview()
+        this.storeId = normalized.storeId
       } catch (err) {
-        console.log('overview load failed', err)
-        this.state.error = '获取经营数据失败，请稍后重试'
-        uni.showToast({ title: this.state.error, icon: 'none' })
+        console.error('overview load failed', err)
+        this.error = (err && err.message) || '获取经营数据失败，请稍后重试'
+        uni.showToast({ title: this.error, icon: 'none' })
       } finally {
-        this.state.loading = false
+        this.loading = false
       }
     },
-    applyOverview() {
-      const sd = this.overview?.storeData || {}
-      const cd = this.overview?.consultantData || {}
-      const fd = this.overview?.financeData || {}
-      const rate = Number(sd.oldCustomersActiveRate || 0)
-      const amount = Number(fd.totalConsumeAmount || 0)
-      this.ui = {
-        arrivalCount: Number(sd.totalVisits || 0),
-        arrivalByStaff: Number(sd.consultantVisits || 0),
-        arrivalByStore: Number(sd.storeStaffVisits || 0),
-        newCustomer: Number(sd.newCustomers || 0),
-        oldCustomer: Number(sd.oldCustomers || 0),
-        activeRate: `${(rate * 100).toFixed(1).replace(/\.0$/, '')}%`,
-        progress: Math.max(0, Math.min(100, Math.round(rate * 100))),
-        arrivalThisMonth: Number(sd.oldCustomersVisits || 0),
-        staffArrival: Number(cd.visits || 0),
-        calendarBooked: Number(cd.calendarBookings || 0),
-        totalAmount: amount >= 10000 ? (amount / 10000).toFixed(1).replace(/\.0$/, '') : amount.toLocaleString('zh-CN'),
-        totalAmountUnit: amount >= 10000 ? '万' : '',
-        unitPrice: Number(fd.packageUnitPrice || 0),
-        consumeTimes: Number(fd.totalConsumeCount || 0)
+    normalizeOverview(data) {
+      const base = createEmptyOverview()
+      if (data && typeof data === 'object') {
+        base.month = data.month || base.month
+        base.scope = data.scope || base.scope
+        const storeId = data.storeId
+        base.storeId = storeId !== undefined && storeId !== null && storeId !== '' ? storeId : null
+        base.storeData = { ...base.storeData, ...(data.storeData || {}) }
+        base.financeData = { ...base.financeData, ...(data.financeData || {}) }
+        base.consultantData = { ...base.consultantData, ...(data.consultantData || {}) }
       }
+      if (base.consultantData.visits == null) {
+        base.consultantData.visits = base.storeData.consultantVisits
+      }
+      return base
     },
-    changeText(val) {
-      const num = Number(val || 0)
-      const pct = (num * 100).toFixed(0)
-      return `${num >= 0 ? '+' : ''}${pct}%`
-    },
-    pickMonth() {
-      const base = new Date(`${this.state.month}-01T00:00:00`)
-      uni.showActionSheet({
-        itemList: ['上个月', '本月', '下个月'],
-        success: async ({ tapIndex }) => {
-          let target = new Date(base)
-          if (tapIndex === 0) target = new Date(base.getFullYear(), base.getMonth() - 1, 1)
-          if (tapIndex === 1) target = new Date()
-          if (tapIndex === 2) target = new Date(base.getFullYear(), base.getMonth() + 1, 1)
-          this.state.month = this.formatMonth(target)
-          await this.fetchData()
-        }
-      })
+    onMonthChange(e) {
+      const val = (e && e.detail && e.detail.value) || ''
+      const ym = val.slice(0, 7)
+      if (!ym || ym === this.month) return
+      this.month = ym
+      this.fetchData()
     },
     pickScope() {
       uni.showActionSheet({
-        itemList: ['全局统计', '我的门店'],
-        success: async ({ tapIndex }) => {
-          this.state.scope = tapIndex === 1 ? 'mine' : 'global'
-          await this.fetchData()
+        itemList: ['我的门店', '全局统计'],
+        success: ({ tapIndex }) => {
+          const nextScope = tapIndex === 1 ? 'global' : 'mine'
+          if (nextScope === this.scope) return
+          this.scope = nextScope
+          this.fetchData()
         }
       })
     },
@@ -221,13 +286,28 @@ export default {
       const items = this.storeOptions.map(item => item.label)
       uni.showActionSheet({
         itemList: items,
-        success: async ({ tapIndex }) => {
+        success: ({ tapIndex }) => {
           const picked = this.storeOptions[tapIndex]
           if (!picked) return
-          this.state.storeId = picked.value
-          await this.fetchData()
+          this.storeId = picked.value ?? null
+          this.fetchData()
         }
       })
+    },
+    formatAmount(amount) {
+      const num = Number(amount) || 0
+      if (num >= 10000) {
+        return (num / 10000).toFixed(1).replace(/\.0$/, '') + '万'
+      }
+      return num.toFixed(2)
+    },
+    changeText(val) {
+      if (val === null || val === undefined || Number.isNaN(Number(val))) {
+        return '--'
+      }
+      const num = Number(val)
+      const pct = (num * 100).toFixed(0)
+      return `${num >= 0 ? '+' : ''}${pct}%`
     },
     login() {
       uni.navigateTo({ url: '/uni_modules/uni-id-pages/pages/login/login-withoutpwd' })
@@ -241,6 +321,8 @@ export default {
 .header { padding: 14px 16px 8px; text-align: center; }
 .title { font-size: 18px; font-weight: 700; color: #1c1c1e; }
 .filters { display: flex; gap: 12px; padding: 8px 16px 6px; }
+.picker-wrapper { flex: 1; display: block; }
+.picker-wrapper .pill { width: 100%; }
 .pill { flex: 1; background: #fff; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
 .pill .arrow { margin-left: auto; color: #999; }
 .scroll { flex: 1; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 12px; }
@@ -265,6 +347,7 @@ export default {
 .progress { height: 6px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden; }
 .bar { height: 100%; background: #fff; opacity: 0.9; }
 .progress-text { margin-top: 6px; font-size: 12px; }
+.strong { font-weight: 700; }
 .row { display: flex; align-items: center; gap: 8px; }
 .row.between { justify-content: space-between; }
 .line { height: 1px; background: rgba(255,255,255,0.35); margin: 8px 0; }
