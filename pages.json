@@ -68,9 +68,9 @@
 			}
 		},
 		{
-			"path": "pages/analytics/store",
+			"path": "pages/analytics/analytics",
 			"style": {
-				"navigationBarTitleText": "门店指标"
+				"navigationBarTitleText": "月度经营分析"
 			}
 		},
 		{
@@ -88,7 +88,7 @@
 		{
 			"path": "uni_modules/uni-id-pages/pages/userinfo/userinfo",
 			"style": {
-				"navigationBarTitleText": "个人资料"
+				"navigationBarTitleText": "我的"
 			}
 		},
 		{

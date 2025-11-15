@@ -45,6 +45,10 @@
 			"description": "门店名称",
 			"bsonType": "string"
 		},
+		"store_service": {
+			"description": "是否为门店人员提供的服务",
+			"bsonType": "bool"
+		},
 		"consumed_at": {
 			"description": "消耗发生时间（时间戳）",
 			"bsonType": "long"

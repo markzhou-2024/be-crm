@@ -115,6 +115,7 @@ module.exports = {
 			consumed_at: consumedAt,
 			store_id: storeId,
 			store_name: storeName,
+			store_service: consume.store_service === true,
 			create_time: now,
 			update_time: now
 		}

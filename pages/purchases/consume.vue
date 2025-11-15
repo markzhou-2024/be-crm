@@ -24,6 +24,14 @@
         </view>
       </view>
 
+      <view class="field toggle-field">
+        <view class="toggle-label">
+          <text class="field-label">是否店家服务</text>
+          <text class="field-hint">店家服务由门店人员完成</text>
+        </view>
+        <switch :checked="form.store_service" color="#caa265" @change="form.store_service = $event.detail.value"></switch>
+      </view>
+
       <view class="field">
         <text class="field-label">备注</text>
         <textarea class="ipt textarea" v-model="form.note" placeholder="可填写备注"></textarea>
@@ -60,6 +68,7 @@ export default {
         buy_id: '',
         product_name: '',
         count: 1,
+        store_service: false,
         note: ''
       },
       records: [],
@@ -190,6 +199,7 @@ export default {
           buy_id: this.form.buy_id,
           product_name: this.form.product_name.trim(),
           count: this.form.count,
+          store_service: this.form.store_service,
           note: this.form.note
         })
         uni.showToast({ title: '保存成功', icon: 'success' })
@@ -232,6 +242,9 @@ export default {
 .title { font-size:20px; }
 .form { background:#fff; border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(0,0,0,0.04); display:flex; flex-direction:column; gap:16px; }
 .field { display:flex; flex-direction:column; gap:6px; }
+.toggle-field { flex-direction:row; align-items:center; justify-content:space-between; }
+.toggle-label { display:flex; flex-direction:column; }
+.toggle-label .field-hint { font-size:12px; color:#999; margin-top:4px; }
 .field-label { font-size:14px; color:#555; }
 .picker-field, .ipt { display:block; width:100%; background:#f6f7f9; border-radius:10px; padding:12px; box-sizing:border-box; border:none; font-size:14px; color:#333; }
 .picker-field.placeholder { color:#bbb; }
