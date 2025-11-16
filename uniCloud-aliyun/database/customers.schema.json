@@ -1,4 +1,4 @@
-// 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
+﻿// 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
 {
 	"bsonType": "object",
 	"required": [],
@@ -11,6 +11,24 @@
 	"properties": {
 		"_id": {
 			"description": "ID，系统自动生成"
+		},
+		"owner_uid": {
+			"bsonType": "string",
+			"description": "当前负责顾问UID"
+		},
+		"owner_name": {
+			"bsonType": "string",
+			"description": "负责人姓名快照"
+		},
+		"owner_history": {
+			"bsonType": "array",
+			"items": {
+				"bsonType": "object",
+				"properties": {
+					"uid": { "bsonType": "string" },
+					"changed_at": { "bsonType": "long" }
+				}
+			}
 		}
 	}
 }

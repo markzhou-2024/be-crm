@@ -102,15 +102,15 @@
       </view>
 
       <view class="card-list">
-        <view class="card-item disabled">
+        <view class="card-item" @tap="goProductManagement">
           <view class="item-left">
             <text class="item-icon">🏬</text>
             <view class="item-texts">
-              <text class="item-label">门店与顾问管理</text>
-              <text class="item-desc">后续可为管理员开放</text>
+              <text class="item-label">产品管理</text>
+              <text class="item-desc">管理产品与项目</text>
             </view>
           </view>
-          <text class="item-value">敬请期待</text>
+          <text class="item-value">点击进入</text>
         </view>
 
         <view class="card-item disabled">
@@ -193,7 +193,16 @@ export default {
         return
       }
       uni.navigateTo({
-        url: '/pages/analytics/analytics'
+        url: '/pages/analytics/monthly-kpi'
+      })
+    },
+    goProductManagement() {
+      if (!this.isLogin) {
+        uni.showToast({ title: '登录后才能管理产品', icon: 'none' })
+        return
+      }
+      uni.navigateTo({
+        url: '/pages/products/index'
       })
     },
 

@@ -1,0 +1,55 @@
+﻿// 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
+{
+  "bsonType": "object",
+  "required": [
+    "user_id",
+    "month",
+    "scope",
+    "create_time",
+    "update_time"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": { "description": "系统自动生成" },
+    "user_id": { "bsonType": "string" },
+    "month": { "bsonType": "string" },
+    "store_id": { "bsonType": "string" },
+    "scope": {
+      "bsonType": "string",
+      "enum": ["all", "store"]
+    },
+    "store_count": { "bsonType": "int" },
+    "shop_stats": {
+      "bsonType": "object",
+      "properties": {
+        "total_visitors": { "bsonType": "int" },
+        "old_customer_visitors": { "bsonType": "int" },
+        "new_customers": { "bsonType": "int" },
+        "old_customer_visit_times": { "bsonType": "int" }
+      }
+    },
+    "service_stats": {
+      "bsonType": "object",
+      "properties": {
+        "consultant_visits": { "bsonType": "int" },
+        "consultant_services": { "bsonType": "int" },
+        "store_self_services": { "bsonType": "int" }
+      }
+    },
+    "finance_stats": {
+      "bsonType": "object",
+      "properties": {
+        "month_sales_amount": { "bsonType": "double" },
+        "month_consume_amount": { "bsonType": "double" }
+      }
+    },
+    "calc_version": { "bsonType": "int" },
+    "create_time": { "bsonType": "long" },
+    "update_time": { "bsonType": "long" }
+  }
+}

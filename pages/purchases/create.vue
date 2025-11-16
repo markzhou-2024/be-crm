@@ -117,7 +117,7 @@ export default {
         const list = await fetchProducts()
         const options = [{ label: '请选择产品', value: '' }]
         ;(list || []).forEach(item => {
-          if (item && !item.is_draft) {
+          if (item && !item.is_draft && item.status !== 'off_sale') {
             options.push({ label: item.product_name || '未命名产品', value: item.id || item._id })
           }
         })

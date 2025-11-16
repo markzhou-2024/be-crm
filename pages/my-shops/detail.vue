@@ -45,7 +45,6 @@
 
     <view class="cta">
       <button class="btn primary" @tap="addCustomer">👤 添加客户</button>
-      <button class="btn ghost" @tap="openCalendar">📅 查看预约日历</button>
     </view>
   </view>
 </template>

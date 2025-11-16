@@ -18,6 +18,24 @@
 		"_id": {
 			"description": "auto id"
 		},
+		"owner_uid": {
+			"bsonType": "string",
+			"description": "当前负责顾问UID"
+		},
+		"owner_name": {
+			"bsonType": "string",
+			"description": "负责人姓名快照"
+		},
+		"owner_history": {
+			"bsonType": "array",
+			"items": {
+				"bsonType": "object",
+				"properties": {
+					"uid": { "bsonType": "string" },
+					"changed_at": { "bsonType": "long" }
+				}
+			}
+		},
 		"user_id": {
 			"bsonType": "string",
 			"description": "owner uid"
