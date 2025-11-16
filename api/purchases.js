@@ -11,9 +11,13 @@ function normalize(res) {
   return res?.data || res
 }
 
-export async function createPurchase(payload) {
-  const res = await service.createPurchase(payload)
+export async function createOrder(payload) {
+  const res = await service.createOrder(payload)
   return normalize(res)
+}
+
+export async function createPurchase(payload) {
+  return createOrder(payload)
 }
 
 export async function listPurchases(customerId) {

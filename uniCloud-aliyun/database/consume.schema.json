@@ -53,6 +53,10 @@
 			"description": "消耗发生时间（时间戳）",
 			"bsonType": "long"
 		},
+		"consume_date": {
+			"description": "消耗日期（YYYY-MM-DD）",
+			"bsonType": "string"
+		},
 		"create_time": {
 			"description": "创建时间",
 			"bsonType": "long"

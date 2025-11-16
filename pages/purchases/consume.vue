@@ -24,6 +24,13 @@
         </view>
       </view>
 
+      <view class="field">
+        <text class="field-label">消耗日期</text>
+        <picker class="picker" mode="date" :value="form.consume_date" @change="onConsumeDateChange">
+          <view class="picker-field">{{ form.consume_date }}</view>
+        </picker>
+      </view>
+
       <view class="field toggle-field">
         <view class="toggle-label">
           <text class="field-label">是否店家服务</text>
@@ -47,7 +54,7 @@
           <text class="item-count">{{ r.count || r.service_times || 0 }} 次</text>
         </view>
         <view class="item-sub">
-          <text>{{ formatDate(r.consumed_at || r.service_date) }}</text>
+          <text>{{ r.consume_date || formatDate(r.consumed_at || r.service_date) }}</text>
           <text v-if="r.note" class="item-note">{{ r.note }}</text>
         </view>
       </view>
@@ -59,6 +66,15 @@
 <script>
 import { listPurchases } from '@/api/purchases.js'
 
+const formatDateValue = (value = Date.now()) => {
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const y = date.getFullYear()
+  const m = `${date.getMonth() + 1}`.padStart(2, '0')
+  const d = `${date.getDate()}`.padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 export default {
   data() {
     return {
@@ -68,6 +84,7 @@ export default {
         buy_id: '',
         product_name: '',
         count: 1,
+        consume_date: formatDateValue(),
         store_service: false,
         note: ''
       },
@@ -111,7 +128,6 @@ export default {
 	  return uniCloud.importObject('consume-service', { customUI: true })
 	},
 	extractArray(payload) {
-    extractArray(payload) {
       if (Array.isArray(payload)) return payload
       if (Array.isArray(payload?.data)) return payload.data
       if (Array.isArray(payload?.result?.data)) return payload.result.data
@@ -128,6 +144,20 @@ export default {
       const idx = Number(e?.detail?.value)
       if (Number.isNaN(idx)) return
       this.setSelectedPurchase(idx)
+    },
+    onConsumeDateChange(e) {
+      const value = e?.detail?.value
+      this.form.consume_date = value || formatDateValue()
+    },
+    consumeDateToTimestamp(dateStr) {
+      if (!dateStr) return Date.now()
+      const normalized = `${dateStr}T00:00:00`
+      const parsed = Date.parse(normalized)
+      if (!Number.isNaN(parsed)) {
+        return parsed
+      }
+      const direct = Date.parse(dateStr)
+      return Number.isNaN(direct) ? Date.now() : direct
     },
     setSelectedPurchase(index) {
       this.selectedPurchaseIndex = index
@@ -186,39 +216,43 @@ export default {
     },
     async saveConsume() {
       if (!this.customer_id) {
-        uni.showToast({ title: '缺少客户ID', icon: 'none' })
+        uni.showToast({ title: 'ȱ�ٿͻ�ID', icon: 'none' })
         return
       }
       if (this.selectedPurchaseIndex === -1 || !this.form.product_name.trim()) {
-        uni.showToast({ title: '请选择项目', icon: 'none' })
+        uni.showToast({ title: '��ѡ����Ŀ', icon: 'none' })
         return
       }
       if (!this.form.count || this.form.count <= 0) {
-        uni.showToast({ title: '消耗次数需大于0', icon: 'none' })
+        uni.showToast({ title: '���Ĵ��������0', icon: 'none' })
         return
       }
-     try {
-    const service = this.getConsumeService()
-    await service.createConsumeRecord({
-      customer_id: this.customer_id,
-      buy_id: this.form.buy_id,
-      product_name: this.form.product_name.trim(),
-      count: this.form.count,
-      store_service: this.form.store_service,
-      note: this.form.note
-      // 这里如果后续在前端有 store_id / store_name，也可以一并传给后端
-      // store_id: this.current_store_id,
-      // store_name: this.current_store_name
-    })
-    uni.showToast({ title: '保存成功', icon: 'success' })
-    this.fetchRecords()
-    this.emitSavedEvent()
-    setTimeout(() => {
-      uni.navigateBack()
-    }, 400)
-  } catch (err) {
-    uni.showToast({ title: err?.errMsg || err?.message || '保存失败', icon: 'none' })
-  }
+      try {
+        const consumeDateStr = (this.form.consume_date || '').trim() || formatDateValue()
+        const consumedAtTs = this.consumeDateToTimestamp(consumeDateStr)
+        const service = this.getConsumeService()
+        await service.createConsumeRecord({
+          customer_id: this.customer_id,
+          buy_id: this.form.buy_id,
+          product_name: this.form.product_name.trim(),
+          count: this.form.count,
+          store_service: this.form.store_service,
+          note: this.form.note,
+          consume_date: consumeDateStr,
+          consumed_at: consumedAtTs
+          // �������������ǰ���� store_id / store_name��Ҳ����һ���������
+          // store_id: this.current_store_id,
+          // store_name: this.current_store_name
+        })
+        uni.showToast({ title: '����ɹ�', icon: 'success' })
+        this.fetchRecords()
+        this.emitSavedEvent()
+        setTimeout(() => {
+          uni.navigateBack()
+        }, 400)
+      } catch (err) {
+        uni.showToast({ title: err?.errMsg || err?.message || '����ʧ��', icon: 'none' })
+      }
 
     },
     emitSavedEvent() {

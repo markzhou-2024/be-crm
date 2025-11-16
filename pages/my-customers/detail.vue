@@ -69,7 +69,7 @@
             <view class="consume-row">
               <view>
                 <view class="consume-title">{{ item.product_name || item.package_name || '项目' }}</view>
-                <view class="consume-meta">{{ formatConsumeDate(item.consumed_at || item.service_date) }} · 消耗{{ item.count || item.service_times || 0 }}次</view>
+                <view class="consume-meta">{{ formatConsumeDate(item.consume_date || item.consumed_at || item.service_date) }} · 消耗{{ item.count || item.service_times || 0 }}次</view>
               </view>
               <text class="consume-remaining">{{ renderRemaining(item._remaining) }}</text>
             </view>
@@ -314,6 +314,12 @@ export default {
     },
     formatConsumeDate(value) {
       if (!value) return '--'
+      if (typeof value === 'string') {
+        const trimmed = value.trim()
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+          return trimmed
+        }
+      }
       const date = typeof value === 'number' || /^\d+$/.test(value)
         ? new Date(Number(value))
         : new Date(value)

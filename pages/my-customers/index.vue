@@ -3,17 +3,32 @@
     <view class="header">
       <view class="title">客户管理</view>
 
-      <view class="search">
-        <text class="search-icon">🔍</text>
-        <input
-          class="search-input"
-          v-model="keyword"
-          placeholder="搜索客户姓名或手机号"
-          placeholder-style="color:#b9b9bd"
-          confirm-type="search"
-          @confirm="applyFilter(true)"
-        />
-        <text v-if="keyword" class="clear" @tap="clearSearch">✕</text>
+      <view class="search-row">
+        <view class="search">
+          <text class="search-icon">🔍</text>
+          <input
+            class="search-input"
+            v-model="keyword"
+            placeholder="姓名或手机号搜索"
+            placeholder-style="color:#b9b9bd"
+            confirm-type="search"
+            @confirm="applyFilter(true)"
+          />
+          <text v-if="keyword" class="clear" @tap="clearSearch">✕</text>
+        </view>
+        <picker
+          class="shop-picker"
+          mode="selector"
+          :range="shopPickerOptions"
+          range-key="label"
+          :value="shopPickerIndex"
+          @change="onShopPickerChange"
+        >
+          <view class="shop-picker-field">
+            <text class="shop-picker-text">{{ shopPickerOptions[shopPickerIndex]?.label || '全部门店' }}</text>
+            <text class="picker-arrow">⌄</text>
+          </view>
+        </picker>
       </view>
 
       <scroll-view class="tabs" scroll-x enable-flex>
@@ -26,15 +41,6 @@
         >{{ t.label }}</view>
       </scroll-view>
 
-      <scroll-view class="shop-filter" scroll-x enable-flex>
-        <view
-          v-for="opt in shopFilters"
-          :key="opt.value"
-          class="shop-pill"
-          :class="{ active: activeShopId === opt.value }"
-          @tap="switchShop(opt.value)"
-        >{{ opt.label }}</view>
-      </scroll-view>
     </view>
 
     <scroll-view
@@ -97,7 +103,7 @@
 // @ts-nocheck
 import { fetchCustomers, deleteCustomer as deleteCustomerApi } from '@/api/customers.js'
 import { filterByStoreId } from '@/utils/customersStore.js'
-import { loadShops } from '@/utils/shopsStore.js'
+import { fetchShops } from '@/api/shops.js'
 
 export default {
   data() {
@@ -110,9 +116,9 @@ export default {
         { label: 'VIP客户', value: 'vip' },
         { label: '活跃客户', value: 'active' }
       ],
-      shops: [],
-      shopFilters: [],
       activeShopId: '',
+      shopOptions: [{ label: '全部门店', value: '' }],
+      shopPickerIndex: 0,
       list: [],
       filtered: [],
       visibleList: [],
@@ -131,15 +137,43 @@ export default {
     this.initShops()
     this.initData()
   },
+  computed: {
+    shopPickerOptions() {
+      return this.shopOptions && this.shopOptions.length
+        ? this.shopOptions
+        : [{ label: '全部门店', value: '' }]
+    }
+  },
   methods: {
-    initShops() {
-      const shops = loadShops([])
-      this.shops = shops
-      this.shopFilters = [
-        { label: '全部门店', value: '' },
-        ...shops.map(s => ({ label: s.store_name || '未命名门店', value: s._id })),
-        { label: '未分配', value: '_unassigned' }
-      ]
+    async initShops() {
+      try {
+        const list = await fetchShops()
+        const mapped = (list || []).map(item => ({
+          label: item.store_name || item.name || '未命名门店',
+          value: item._id || item.id || ''
+        })).filter(item => item.value)
+        this.shopOptions = [{ label: '全部门店', value: '' }, ...mapped]
+      } catch (err) {
+        console.log('load shops failed', err)
+        this.shopOptions = [{ label: '全部门店', value: '' }]
+      }
+      if (!this.shopOptions.find(opt => opt.value === this.activeShopId)) {
+        this.activeShopId = ''
+      }
+      this.syncShopPicker()
+    },
+    syncShopPicker() {
+      const options = this.shopPickerOptions || []
+      const idx = options.findIndex(opt => opt.value === this.activeShopId)
+      this.shopPickerIndex = idx >= 0 ? idx : 0
+    },
+    onShopPickerChange(e) {
+      const idx = Number(e?.detail?.value)
+      if (Number.isNaN(idx)) return
+      this.shopPickerIndex = idx
+      const option = this.shopPickerOptions[idx]
+      this.activeShopId = option?.value || ''
+      this.applyFilter(true)
     },
     async initData() {
       this.loading = true
@@ -179,10 +213,6 @@ export default {
     },
     switchTab(value) {
       this.activeTab = value
-      this.applyFilter(true)
-    },
-    switchShop(value) {
-      this.activeShopId = value
       this.applyFilter(true)
     },
     clearSearch() {
@@ -286,13 +316,22 @@ export default {
   box-shadow: 0 6px 20px rgba(0,0,0,.04);
 }
 .title { font-size: 18px; color:#222; font-weight:600; margin-bottom: 12px; }
+.search-row { display:flex; align-items:center; gap:10px; }
 .search {
+  flex:1;
   height: 40px; border-radius: 20px; background:#f5f5f7;
   display:flex; align-items:center; padding:0 12px; position:relative;
 }
 .search-icon { margin-right: 6px; color:#a3a3a9; }
 .search-input { flex:1; font-size:14px; color:#333; }
 .clear { position:absolute; right:10px; color:#b3b3b8; font-size:12px; padding:2px 6px; }
+.shop-picker { width: 140px; }
+.shop-picker-field {
+  height: 40px; border-radius: 14px; background:#f5f5f7;
+  padding: 0 12px; display:flex; align-items:center; justify-content:space-between;
+}
+.shop-picker-text { font-size:13px; color:#555; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.picker-arrow { color:#a5a5ab; font-size:12px; margin-left:8px; }
 .tabs { margin-top: 12px; white-space: nowrap; }
 .tab {
   display:inline-flex; align-items:center; justify-content:center;
@@ -300,14 +339,6 @@ export default {
   border-radius:17px; background:#f6f7f9; color:#666; font-size:13px;
 }
 .tab.active { background:#d9c19a; color:#fff; font-weight:600; }
-.shop-filter { margin-top:12px; white-space:nowrap; }
-.shop-pill {
-  display:inline-flex; align-items:center; justify-content:center;
-  height:30px; padding:0 12px; margin-right:8px;
-  border-radius:15px; background:#f2f2f4; color:#666; font-size:12px;
-}
-.shop-pill.active { background:#caa265; color:#fff; }
-
 .list { height: calc(100vh - 220px); padding: 0 12px 16px; box-sizing: border-box; }
 .card {
   background:#fff; border-radius:16px; padding:12px;

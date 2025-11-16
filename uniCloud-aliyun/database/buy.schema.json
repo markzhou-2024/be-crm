@@ -27,6 +27,13 @@
 		"customer_id": {
 			"bsonType": "string",
 			"description": "客户ID"
+		},		"product_id": {
+			"bsonType": "string",
+			"description": "�������ƷID"
+		},
+		"product_name": {
+			"bsonType": "string",
+			"description": "�������Ʒ����"
 		},
 		"package_name": {
 			"bsonType": "string",

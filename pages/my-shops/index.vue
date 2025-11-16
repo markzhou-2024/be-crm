@@ -80,7 +80,6 @@ export default {
     return {
       tabs: [
         { label: '全部门店', value: 'all' },
-        { label: '营业中', value: 'active' },
         { label: '高营收', value: 'high' }
       ],
       keyword: '',

@@ -1,0 +1,69 @@
+// 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
+{
+  "bsonType": "object",
+  "required": ["user_id", "product_name", "status"],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "产品ID（系统自动生成）"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "顾问UID"
+    },
+    "store_id": {
+      "bsonType": "string",
+      "description": "门店ID，可为空"
+    },
+    "product_name": {
+      "bsonType": "string",
+      "description": "产品名称"
+    },
+    "price": {
+      "bsonType": "double",
+      "description": "产品价格（元）"
+    },
+    "total_times": {
+      "bsonType": "int",
+      "description": "包含服务次数"
+    },
+    "status": {
+      "bsonType": "string",
+      "enum": ["on_sale", "off_sale"],
+      "default": "on_sale",
+      "description": "在售状态"
+    },
+    "is_draft": {
+      "bsonType": "bool",
+      "default": false,
+      "description": "是否草稿（自动补充待确认）"
+    },
+    "source": {
+      "bsonType": "string",
+      "description": "来源标记，如 from_order"
+    },
+    "create_time": {
+      "bsonType": "long",
+      "description": "创建时间戳（ms）"
+    },
+    "update_time": {
+      "bsonType": "long",
+      "description": "更新时间戳（ms）"
+    }
+  },
+  "indexes": [
+    {
+      "name": "idx_user_product_name",
+      "unique": true,
+      "fields": [
+        { "field": "user_id", "order": "asc" },
+        { "field": "product_name", "order": "asc" }
+      ]
+    }
+  ]
+}

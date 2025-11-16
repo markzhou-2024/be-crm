@@ -44,6 +44,18 @@
 			}
 		},
 		{
+			"path": "pages/products/index",
+			"style": {
+				"navigationBarTitleText": "产品管理"
+			}
+		},
+		{
+			"path": "pages/products/edit",
+			"style": {
+				"navigationBarTitleText": "编辑产品"
+			}
+		},
+		{
 			"path": "pages/bookings/create",
 			"style": {
 				"navigationBarTitleText": "新增预约"

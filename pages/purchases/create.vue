@@ -6,14 +6,21 @@
     </view>
 
     <scroll-view class="form" scroll-y>
-      <view class="field required">
-        <text class="label">套餐名称</text>
-        <input class="input" v-model="form.package_name" placeholder="请输入套餐名称" />
+      <view class="field">
+        <text class="label">选择已有产品</text>
+        <picker mode="selector" :range="productOptions" range-key="label" :value="productPickerIndex" @change="onProductChange">
+          <view class="picker-trigger">{{ productOptions[productPickerIndex]?.label || '请选择产品' }}</view>
+        </picker>
+      </view>
+
+      <view class="field">
+        <text class="label">手动输入新项目名称</text>
+        <input class="input" v-model="customProductName" placeholder="可留空，如不选择产品请填写" />
       </view>
 
       <view class="field required">
-        <text class="label">服务次数</text>
-        <input class="input" v-model="form.service_times" type="number" placeholder="请输入正整数" />
+        <text class="label">本次消耗次数</text>
+        <input class="input" v-model="form.service_times" type="number" placeholder="请输入消耗次数" />
       </view>
 
       <view class="field required">
@@ -24,21 +31,20 @@
       </view>
 
       <view class="field required">
-        <text class="label">费用（元）</text>
+        <text class="label">金额（元）</text>
         <input class="input" v-model="form.amount" type="number" placeholder="0.00" />
       </view>
 	  
       <view class="field toggle-field">
         <view class="toggle-label">
-          <text class="label">新客首次购买</text>
-          <text class="hint">开启表示此客户为首次在本店购买</text>
+          <text class="label">是否新客首次购买</text>
+          <text class="hint">开启后标记客户为首次购买</text>
         </view>
         <switch
           :checked="form.is_first_purchase"
           color="#caa265"
           @change="form.is_first_purchase = $event.detail.value" />
       </view>
-
 
       <view class="field">
         <text class="label">备注</text>
@@ -57,6 +63,7 @@
       </view>
     </scroll-view>
 
+
     <view class="actions">
       <button class="btn ghost" @tap="cancel">取消</button>
       <button class="btn primary" @tap="submit">保存</button>
@@ -66,13 +73,19 @@
 
 <script>
 // @ts-nocheck
-import { createPurchase, listPurchases } from '@/api/purchases.js'
+import { createOrder, listPurchases } from '@/api/purchases.js'
+import { fetchProducts } from '@/api/products.js'
 
 export default {
   data() {
     return {
       customerId: '',
       customerName: '',
+      productOptions: [{ label: '请选择产品', value: '' }],
+      productPickerIndex: 0,
+      selectedProductId: '',
+      selectedProductName: '',
+      customProductName: '',
       form: {
         package_name: '',
         service_times: '',
@@ -87,6 +100,7 @@ export default {
   },
   onLoad() {
     this.form.purchase_date = this.formatDate(new Date())
+    this.loadProducts()
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel()
     if (channel) {
       channel.on('initCustomerInfo', payload => {
@@ -98,6 +112,33 @@ export default {
     }
   },
   methods: {
+    async loadProducts() {
+      try {
+        const list = await fetchProducts()
+        const options = [{ label: '请选择产品', value: '' }]
+        ;(list || []).forEach(item => {
+          if (item && !item.is_draft) {
+            options.push({ label: item.product_name || '未命名产品', value: item.id || item._id })
+          }
+        })
+        this.productOptions = options
+        this.productPickerIndex = 0
+        this.selectedProductId = ''
+        this.selectedProductName = ''
+      } catch (err) {
+        console.log('load products failed', err)
+        this.productOptions = [{ label: '请选择产品', value: '' }]
+      }
+    },
+    onProductChange(e) {
+      const idx = Number(e?.detail?.value)
+      if (Number.isNaN(idx)) return
+      this.productPickerIndex = idx
+      const option = this.productOptions[idx]
+      this.selectedProductId = option?.value || ''
+      this.selectedProductName = option?.label || ''
+      this.form.package_name = this.selectedProductName
+    },
     formatDate(date) {
       const d = new Date(date)
       const m = d.getMonth() + 1
@@ -117,10 +158,12 @@ export default {
       uni.navigateBack()
     },
     validate() {
-      if (!this.form.package_name.trim()) {
-        uni.showToast({ title: '请输入套餐名称', icon: 'none' })
+      const finalName = (this.selectedProductName || '').trim() || (this.customProductName || '').trim() || (this.form.package_name || '').trim()
+      if (!finalName) {
+        uni.showToast({ title: '�������ײ�����', icon: 'none' })
         return false
       }
+      this.form.package_name = finalName
       const times = Number(this.form.service_times)
       if (!Number.isInteger(times) || times <= 0) {
         uni.showToast({ title: '服务次数须为正整数', icon: 'none' })
@@ -148,10 +191,12 @@ export default {
         purchase_date: this.form.purchase_date,
         amount: this.form.amount,
         remark: this.form.remark.trim(),
-        is_first_purchase: !!this.form.is_first_purchase
+        is_first_purchase: !!this.form.is_first_purchase,
+        product_id: this.selectedProductId,
+        product_name: this.selectedProductId ? '' : (this.customProductName || '').trim()
       }
       try {
-        const record = await createPurchase(payload)
+        const record = await createOrder(payload)
         if (this.eventChannel) {
           this.eventChannel.emit('purchaseCreated', record)
         }
