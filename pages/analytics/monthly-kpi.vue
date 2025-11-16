@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="overview-card">
       <view class="overview-text">

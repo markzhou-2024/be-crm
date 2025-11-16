@@ -109,7 +109,13 @@ export default {
         uni.showToast({ title: err?.errMsg || err?.message || '加载失败', icon: 'none' })
       }
     },
-    addCustomer() { uni.showToast({ title: '添加客户（待接后端）', icon: 'none' }) },
+    addCustomer() {
+      if (!this.id) return
+      const storeName = encodeURIComponent(this.shop.store_name || '')
+      uni.navigateTo({
+        url: `/pages/my-customers/create?store_id=${this.id}&store_name=${storeName}`
+      })
+    },
     openCalendar() { uni.showToast({ title: '预约日历（待接后端）', icon: 'none' }) },
     goEdit() { uni.navigateTo({ url: `/pages/my-shops/edit?id=${this.id}` }) },
     goCustomers() {

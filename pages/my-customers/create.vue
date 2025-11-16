@@ -62,6 +62,8 @@ export default {
     return {
       submitting: false,
       shopOptions: [],
+      prefillStoreId: '',
+      prefillStoreName: '',
       form: {
         name: '',
         phone: '',
@@ -75,8 +77,11 @@ export default {
       }
     }
   },
-  async onLoad() {
+  async onLoad(query = {}) {
+    this.prefillStoreId = (query.store_id || query.storeId || '').trim()
+    this.prefillStoreName = decodeURIComponent(query.store_name || query.storeName || '')
     await this.initShops()
+    this.applyPrefillStore()
   },
   methods: {
     async initShops() {
@@ -89,9 +94,21 @@ export default {
         value: s._id,
         label: s.store_name || '未命名门店'
       }))
+        this.applyPrefillStore()
       } catch (err) {
         uni.showToast({ title: err?.errMsg || err?.message || '加载门店失败', icon: 'none' })
         this.shopOptions = []
+      }
+    },
+    applyPrefillStore() {
+      if (!this.prefillStoreId) return
+      const match = this.shopOptions.find(opt => opt.value === this.prefillStoreId)
+      if (match) {
+        this.form.store_id = match.value
+        this.form.store_name = match.label
+      } else {
+        this.form.store_id = this.prefillStoreId
+        this.form.store_name = this.prefillStoreName || '指定门店'
       }
     },
     onVipChange(e) {
