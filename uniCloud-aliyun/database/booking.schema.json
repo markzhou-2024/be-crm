@@ -1,0 +1,126 @@
+// 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
+{
+	"bsonType": "object",
+	"required": [
+		"user_id",
+		"store_id",
+		"store_name",
+		"start_ts",
+		"end_ts",
+		"status",
+		"create_time"
+	],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "系统自动生成"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"description": "关联的用户 UID"
+		},
+		"customer_id": {
+			"bsonType": "string",
+			"description": "关联的客户 ID"
+		},
+		"customer_name": {
+			"bsonType": "string",
+			"description": "客户姓名（新增预约时保存）"
+		},
+		"store_id": {
+			"bsonType": "string",
+			"description": "门店 ID"
+		},
+		"store_name": {
+			"bsonType": "string",
+			"description": "门店名称"
+		},
+		"staff_name": {
+			"bsonType": "string",
+			"description": "指定员工/顾问"
+		},
+		"service_name": {
+			"bsonType": "string",
+			"description": "服务/项目名称"
+		},
+		"title": {
+			"bsonType": "string",
+			"description": "日程标题（自建日程使用）"
+		},
+		"note": {
+			"bsonType": "string",
+			"description": "日程备注"
+		},
+		"remark": {
+			"bsonType": "string",
+			"description": "预约备注"
+		},
+		"start_ts": {
+			"bsonType": "long",
+			"description": "开始时间戳（毫秒）"
+		},
+		"end_ts": {
+			"bsonType": "long",
+			"description": "结束时间戳（毫秒）"
+		},
+		"status": {
+			"bsonType": "string",
+			"enum": [
+				"scheduled",
+				"completed",
+				"canceled"
+			],
+			"description": "预约状态"
+		},
+		"calendar_only": {
+			"bsonType": "bool",
+			"description": "是否仅存在于日程模块（自建日程）"
+		},
+		"created_at": {
+			"bsonType": "long",
+			"description": "兼容旧数据的创建时间"
+		},
+		"updated_at": {
+			"bsonType": "long",
+			"description": "兼容旧数据的更新时间"
+		},
+		"create_time": {
+			"bsonType": "long",
+			"description": "创建时间戳"
+		},
+		"update_time": {
+			"bsonType": "long",
+			"description": "近期更新时间戳"
+		}
+	},
+	"indexes": [
+		{
+			"name": "idx_user_start",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "start_ts", "order": "asc" }
+			]
+		},
+		{
+			"name": "idx_user_store_start",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "store_id", "order": "asc" },
+				{ "field": "start_ts", "order": "desc" }
+			]
+		},
+		{
+			"name": "idx_user_customer_start",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "customer_id", "order": "asc" },
+				{ "field": "start_ts", "order": "desc" }
+			]
+		}
+	]
+}

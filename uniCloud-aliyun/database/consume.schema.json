@@ -1,0 +1,90 @@
+// 文档教程: https://uniapp.dcloud.net.cn/uniCloud/schema
+{
+	"bsonType": "object",
+	"required": ["user_id", "customer_id", "product_name", "count", "consumed_at", "create_time", "update_time"],
+	"permission": {
+		"read": false,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "ID，系统自动生成"
+		},
+		"user_id": {
+			"description": "记录所属用户ID",
+			"bsonType": "string"
+		},
+		"customer_id": {
+			"description": "顾客ID",
+			"bsonType": "string"
+		},
+		"buy_id": {
+			"description": "关联的购买记录ID",
+			"bsonType": "string"
+		},
+		"product_name": {
+			"description": "项目名称",
+			"bsonType": "string"
+		},
+		"count": {
+			"description": "本次消耗次数",
+			"bsonType": "int",
+			"minimum": 1
+		},
+		"note": {
+			"description": "备注",
+			"bsonType": "string"
+		},
+		"store_id": {
+			"description": "门店ID",
+			"bsonType": "string"
+		},
+		"store_name": {
+			"description": "门店名称",
+			"bsonType": "string"
+		},
+		"store_service": {
+			"description": "是否为门店人员提供的服务",
+			"bsonType": "bool"
+		},
+		"consumed_at": {
+			"description": "消耗发生时间（时间戳）",
+			"bsonType": "long"
+		},
+		"create_time": {
+			"description": "创建时间",
+			"bsonType": "long"
+		},
+		"update_time": {
+			"description": "更新时间",
+			"bsonType": "long"
+		}
+	},
+	"indexes": [
+		{
+			"name": "idx_user_store_time",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "store_id", "order": "asc" },
+				{ "field": "consumed_at", "order": "desc" }
+			]
+		},
+		{
+			"name": "idx_user_customer_time",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "customer_id", "order": "asc" },
+				{ "field": "consumed_at", "order": "desc" }
+			]
+		},
+		{
+			"name": "idx_user_buy",
+			"fields": [
+				{ "field": "user_id", "order": "asc" },
+				{ "field": "buy_id", "order": "asc" }
+			]
+		}
+	]
+}

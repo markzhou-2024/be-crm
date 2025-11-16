@@ -1,0 +1,99 @@
+const uniID = require('uni-id-common')
+const db = uniCloud.database()
+const dbCmd = db.command
+
+const consumeCollection = db.collection('consume')
+const bookingCollection = db.collection('booking')
+
+function monthRange(month) {
+  const base = month ? new Date(`${month}-01T00:00:00`) : new Date()
+  const start = new Date(base.getFullYear(), base.getMonth(), 1)
+  const end = new Date(base.getFullYear(), base.getMonth() + 1, 1)
+  return { start: start.getTime(), end: end.getTime(), month: `${start.getFullYear()}-${`${start.getMonth() + 1}`.padStart(2, '0')}` }
+}
+
+module.exports = {
+  async _before () {
+    const clientInfo = this.getClientInfo()
+    this.uniID = uniID.createInstance({ clientInfo })
+
+    const httpInfo = typeof this.getHttpInfo === 'function' ? this.getHttpInfo() : null
+    let token = ''
+    if (clientInfo && clientInfo.uniIdToken) token = clientInfo.uniIdToken
+    if (!token && httpInfo && httpInfo.headers) token = httpInfo.headers['x-uni-id-token'] || httpInfo.headers['uni-id-token'] || ''
+    if (!token && httpInfo && httpInfo.body) {
+      try { token = (JSON.parse(httpInfo.body).uniIdToken) || '' } catch (e) {}
+    }
+    this.uid = null
+    if (token) {
+      const payload = await this.uniID.checkToken(token)
+      if (payload && !payload.errCode && !payload.code) this.uid = payload.uid
+    }
+  },
+
+  async getMonthlyOverview(params = {}) {
+    const { start, end, month } = monthRange(params.month)
+    const scope = 'mine'
+    const requestedStoreId = (params.store_id || params.storeId || '').trim()
+
+    const consumeWhere = [{ consumed_at: dbCmd.gte(start) }, { consumed_at: dbCmd.lt(end) }]
+    if (this.uid) consumeWhere.push({ user_id: this.uid })
+    if (requestedStoreId) consumeWhere.push({ store_id: requestedStoreId })
+
+    let consumeDocs = []
+    try {
+      const res = await consumeCollection.where(dbCmd.and(consumeWhere)).field('count,store_service').get()
+      consumeDocs = Array.isArray(res.data) ? res.data : []
+    } catch (e) {}
+
+    let totalVisits = 0
+    let consultantVisits = 0
+    let storeStaffVisits = 0
+    consumeDocs.forEach(doc => {
+      const c = Number(doc.count || 0)
+      totalVisits += c
+      if (doc.store_service === true) storeStaffVisits += c
+      else consultantVisits += c
+    })
+
+    let calendarBookings = 0
+    try {
+      const bookingWhere = [
+        { start_ts: dbCmd.gte(start) },
+        { start_ts: dbCmd.lt(end) }
+      ]
+      if (this.uid) bookingWhere.push({ user_id: this.uid })
+      if (requestedStoreId) bookingWhere.push({ store_id: requestedStoreId })
+      const res = await bookingCollection.where(dbCmd.and(bookingWhere)).field('_id').count()
+      calendarBookings = Number(res.total || 0)
+    } catch (e) {}
+
+    const overview = {
+      month,
+      scope,
+      storeData: {
+        totalVisits,
+        consultantVisits,
+        storeStaffVisits,
+        newCustomers: 0,
+        newCustomersChangeRate: 0,
+        oldCustomers: 0,
+        oldCustomersActiveRate: 0,
+        oldCustomersVisits: Math.max(0, Math.floor(totalVisits * 0.6))
+      },
+      consultantData: {
+        visits: consultantVisits,
+        visitsChangeRate: 0,
+        calendarBookings
+      },
+      financeData: {
+        totalConsumeAmount: 0,
+        totalConsumeAmountChangeRate: 0,
+        packageUnitPrice: 0,
+        totalConsumeCount: totalVisits
+      }
+    }
+
+    return { code: 0, data: overview }
+  }
+}
