@@ -5,6 +5,7 @@ const dbCmd = db.command
 const consumeCollection = db.collection('consume')
 const bookingCollection = db.collection('booking')
 const shopsCollection = db.collection('shops')
+const buyCollection = db.collection('buy')
 
 function monthRange(month) {
   const base = month ? new Date(`${month}-01T00:00:00`) : new Date()
@@ -62,18 +63,50 @@ module.exports = {
 
     let consumeDocs = []
     try {
-      const res = await consumeCollection.where(dbCmd.and(consumeWhere)).field('count,store_service').get()
+      const res = await consumeCollection.where(dbCmd.and(consumeWhere)).field('count,store_service,buy_id').get()
       consumeDocs = Array.isArray(res.data) ? res.data : []
     } catch (e) {}
 
     let totalVisits = 0
     let consultantVisits = 0
     let storeStaffVisits = 0
+    const buyIds = new Set()
     consumeDocs.forEach(doc => {
       const c = Number(doc.count || 0)
       totalVisits += c
       if (doc.store_service === true) storeStaffVisits += c
       else consultantVisits += c
+      if (doc.buy_id) buyIds.add(doc.buy_id)
+    })
+
+    let unitPriceMap = {}
+    if (buyIds.size) {
+      try {
+        const { data } = await buyCollection.where(dbCmd.and([
+          { _id: dbCmd.in(Array.from(buyIds)) }
+        ])).field('_id,amount,service_times,quantity').get()
+        unitPriceMap = {}
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            const quantity = Number(item.quantity ?? item.service_times ?? 0)
+            const unitPrice = quantity > 0 ? Number(item.amount || 0) / quantity : 0
+            unitPriceMap[item._id] = unitPrice
+          })
+        }
+      } catch (e) {
+        unitPriceMap = {}
+      }
+    }
+
+    let totalConsumeAmount = 0
+    let pricedConsumeCount = 0
+    consumeDocs.forEach(doc => {
+      const c = Number(doc.count || 0)
+      const unitPrice = doc.buy_id ? Number(unitPriceMap[doc.buy_id] || 0) : 0
+      if (unitPrice > 0 && c > 0) {
+        totalConsumeAmount += unitPrice * c
+        pricedConsumeCount += c
+      }
     })
 
     let calendarBookings = 0
@@ -107,9 +140,9 @@ module.exports = {
         calendarBookings
       },
       financeData: {
-        totalConsumeAmount: 0,
+        totalConsumeAmount: Number(totalConsumeAmount.toFixed(2)),
         totalConsumeAmountChangeRate: 0,
-        packageUnitPrice: 0,
+        packageUnitPrice: pricedConsumeCount > 0 ? Number((totalConsumeAmount / pricedConsumeCount).toFixed(2)) : 0,
         totalConsumeCount: totalVisits
       }
     }

@@ -117,7 +117,19 @@ export default {
       return match ? match.label : '负责门店合计'
     },
     hasData() {
-      return Object.values({ ...this.ui }).some(v => Number(v) > 0)
+      const sd = this.overview?.storeData || {}
+      const cd = this.overview?.consultantData || {}
+      const fd = this.overview?.financeData || {}
+      const metricPool = [
+        sd.totalVisits, sd.consultantVisits, sd.storeStaffVisits,
+        sd.newCustomers, sd.oldCustomers, sd.oldCustomersVisits,
+        cd.visits, cd.calendarBookings,
+        fd.totalConsumeAmount, fd.totalConsumeCount, fd.packageUnitPrice
+      ]
+      if (metricPool.some(val => Number(val) > 0)) {
+        return true
+      }
+      return Object.values(this.ui).some(val => typeof val === 'number' && val > 0)
     }
   },
   async onLoad() {
