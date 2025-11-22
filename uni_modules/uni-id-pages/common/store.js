@@ -1,9 +1,13 @@
 import pagesJson from '@/pages.json'
 import config from '@/uni_modules/uni-id-pages/config.js'
 
-const uniIdCo = uniCloud.importObject("uni-id-co")
-const db = uniCloud.database();
-const usersTable = db.collection('uni-id-users')
+const uniIdCo = (typeof uniCloud !== 'undefined' && uniCloud.importObject)
+  ? uniCloud.importObject("uni-id-co")
+  : null
+const db = (typeof uniCloud !== 'undefined' && typeof uniCloud.database === 'function')
+  ? uniCloud.database()
+  : null
+const usersTable = db ? db.collection('uni-id-users') : null
 
 let hostUserInfo = uni.getStorageSync('uni-id-pages-userInfo')||{}
 // console.log( hostUserInfo);
@@ -18,6 +22,11 @@ export const mutations = {
 	// data不为空，表示传递要更新的值(注意不是覆盖是合并),什么也不传时，直接查库获取更新
 	async updateUserInfo(data = false) {
 		if (data) {
+			if (!usersTable) {
+				// 无 clientDB 环境时，仅本地合并更新，避免报错
+				this.setUserInfo(data)
+				return
+			}
 			usersTable.where('_id==$env.uid').update(data).then(e => {
 				// console.log(e);
 				if (e.result.updated) {
@@ -37,15 +46,20 @@ export const mutations = {
 			})
 
 		} else {
-			const uniIdCo = uniCloud.importObject("uni-id-co", {
+			if (!usersTable) {
+				// 无 clientDB 环境，直接清空或保留本地缓存
+				try { this.setUserInfo({},{cover:true}) } catch(e) {}
+				return
+			}
+			const uniIdCo = (typeof uniCloud !== 'undefined' && uniCloud.importObject) ? uniCloud.importObject("uni-id-co", {
 				customUI: true
-			})
+			}) : null
 			try {
 				let res = await usersTable.where("'_id' == $cloudEnv_uid")
 					.field('mobile,nickname,username,email,avatar_file')
 					.get()
 
-				const realNameRes = await uniIdCo.getRealNameInfo()
+				const realNameRes = uniIdCo ? await uniIdCo.getRealNameInfo() : null
 
 				// console.log('fromDbData',res.result.data);
 				this.setUserInfo({
@@ -69,9 +83,11 @@ export const mutations = {
 	},
 	async logout() {
 		// 1. 已经过期就不需要调用服务端的注销接口	2.即使调用注销接口失败，不能阻塞客户端
-		if(uniCloud.getCurrentUserInfo().tokenExpired > Date.now()){
+		if (typeof uniCloud !== 'undefined' && uniCloud.getCurrentUserInfo && uniCloud.getCurrentUserInfo().tokenExpired > Date.now()){
 			try{
-				await uniIdCo.logout()
+				if (uniIdCo && uniIdCo.logout) {
+					await uniIdCo.logout()
+				}
 			}catch(e){
 				console.error(e);
 			}

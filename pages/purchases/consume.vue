@@ -216,15 +216,15 @@ export default {
     },
     async saveConsume() {
       if (!this.customer_id) {
-        uni.showToast({ title: 'ȱ�ٿͻ�ID', icon: 'none' })
+        uni.showToast({ title: '客户ID', icon: 'none' })
         return
       }
       if (this.selectedPurchaseIndex === -1 || !this.form.product_name.trim()) {
-        uni.showToast({ title: '��ѡ����Ŀ', icon: 'none' })
+        uni.showToast({ title: '', icon: 'none' })
         return
       }
       if (!this.form.count || this.form.count <= 0) {
-        uni.showToast({ title: '���Ĵ��������0', icon: 'none' })
+        uni.showToast({ title: '', icon: 'none' })
         return
       }
       try {
@@ -244,14 +244,14 @@ export default {
           // store_id: this.current_store_id,
           // store_name: this.current_store_name
         })
-        uni.showToast({ title: '����ɹ�', icon: 'success' })
+        uni.showToast({ title: '保存成功', icon: 'success' })
         this.fetchRecords()
         this.emitSavedEvent()
         setTimeout(() => {
           uni.navigateBack()
         }, 400)
       } catch (err) {
-        uni.showToast({ title: err?.errMsg || err?.message || '����ʧ��', icon: 'none' })
+        uni.showToast({ title: err?.errMsg || err?.message || '出错了', icon: 'none' })
       }
 
     },

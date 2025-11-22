@@ -4,6 +4,7 @@ const buyCollection = db.collection('buy')
 const customersCollection = db.collection('customers')
 const settingsCollection = db.collection('settings')
 const productsCollection = db.collection('products')
+const dbCmd = db.command
 
 function assertAuthed (ctx) {
   if (!ctx.uid) {
@@ -101,6 +102,26 @@ async function createBuyRecord (ctx, purchase = {}) {
 	}
 	const res = await buyCollection.add(payload)
 	const insertedId = res.id || res.insertId || (Array.isArray(res.insertedIds) ? res.insertedIds[0] : null)
+
+	// 若标记新客首次购买，则回写 customers.first_purchase_at（仅在未设置或更晚时）
+	try {
+		if (payload.is_first_purchase) {
+			const ts = Date.parse(`${date}T00:00:00`)
+			if (!Number.isNaN(ts)) {
+				await customersCollection.where({
+					_id: customerId,
+					user_id: ctx.uid,
+					$or: [
+						{ first_purchase_at: dbCmd.exists(false) },
+						{ first_purchase_at: null },
+						{ first_purchase_at: dbCmd.gt(ts) }
+					]
+				}).update({ first_purchase_at: ts, update_time: Date.now() })
+			}
+		}
+	} catch (e) {
+		console.error('update customers.first_purchase_at failed', e)
+	}
 	return {
 		errCode: 0,
 		data: {

@@ -24,10 +24,7 @@
             <text class="phone-icon">📞</text>
             <text>{{ customer.phone || '-' }}</text>
           </view>
-          <view class="visit-row" v-if="storeVisitCount !== null">
-            <text class="visit-label">本月到该店</text>
-            <text class="visit-value">{{ storeVisitCount }} 次</text>
-          </view>
+
         </view>
       </view>
 
@@ -101,7 +98,7 @@
 // @ts-nocheck
 import { getCustomerById, updateCustomer, deleteCustomer as deleteCustomerApi } from '@/api/customers.js'
 import { listPurchases } from '@/api/purchases.js'
-import { fetchCustomerStoreVisitCount } from '@/api/analytics.js'
+
 
 export default {
   data() {
@@ -121,7 +118,7 @@ export default {
       consumeHistory: [],
       stats: { total_spend: 0, visit_count: 0 },
       isRefreshing: false,
-      storeVisitCount: null
+  
     }
   },
   onLoad(query) {
@@ -136,7 +133,6 @@ export default {
   onShow() {
     if (this.id) {
       this.loadCustomerStats()
-      this.loadStoreVisitCount()
     }
   },
   methods: {
@@ -156,7 +152,6 @@ export default {
           this.loadPurchaseHistory(),
           this.loadConsumeHistory()
         ])
-        await this.loadStoreVisitCount()
       } catch (err) {
         uni.showToast({ title: err?.errMsg || err?.message || '加载失败', icon: 'none' })
       }
@@ -254,24 +249,6 @@ export default {
         setTimeout(() => {
           this.isRefreshing = false
         }, 200)
-      }
-    },
-    async loadStoreVisitCount() {
-      const cid = this.customer._id || this.customer.id || this.id
-      const storeId = this.customer.store_id || this.customer.storeId
-      if (!cid || !storeId) {
-        this.storeVisitCount = null
-        return
-      }
-      try {
-        const res = await fetchCustomerStoreVisitCount({ customer_id: cid, store_id: storeId })
-        this.storeVisitCount = Number(res?.visit_count ?? 0)
-      } catch (err) {
-        if (err?.code === 401 || err?.errCode === 401) {
-          this.storeVisitCount = null
-        } else {
-          this.storeVisitCount = null
-        }
       }
     },
     async saveNotes() {

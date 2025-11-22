@@ -54,6 +54,7 @@
       <view class="history" v-if="history.length">
         <text class="history-title">最近记录</text>
         <view class="history-item" v-for="item in history" :key="item._id">
+          <view class="history-badge" v-if="item.is_first_purchase">新客首次购买</view>
           <view class="history-row">
             <text class="history-name">{{ item.package_name }}</text>
             <text class="history-amount">¥{{ toAmount(item.amount) }}</text>
@@ -230,10 +231,11 @@ export default {
 .textarea { width:100%; min-height:90px; font-size:15px; color:#333; }
 .history { margin-top:12px; }
 .history-title { font-size:13px; color:#999; margin-bottom:6px; }
-.history-item { background:#fff; border-radius:16px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); margin-bottom:10px; }
+.history-item { background:#fff; border-radius:16px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); margin-bottom:10px; position:relative; }
 .history-row { display:flex; justify-content:space-between; font-size:14px; color:#333; }
 .history-amount { color:#caa265; }
 .history-sub { font-size:12px; color:#9a9aa0; margin-top:4px; }
+.history-badge { position:absolute; right:10px; top:10px; background:#ffefe0; color:#d16b00; border:1px solid #ffd4a8; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600; }
 .actions { padding:16px; display:flex; gap:12px; }
 .btn { flex:1; height:46px; border-radius:24px; font-size:16px; }
 .primary { background:#caa265; color:#fff; }

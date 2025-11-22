@@ -51,5 +51,17 @@
     "calc_version": { "bsonType": "int" },
     "create_time": { "bsonType": "long" },
     "update_time": { "bsonType": "long" }
-  }
+  },
+  "indexes": [
+    {
+      "name": "uniq_user_month_scope_store",
+      "unique": true,
+      "fields": [
+        { "field": "user_id", "order": "asc" },
+        { "field": "month", "order": "asc" },
+        { "field": "scope", "order": "asc" },
+        { "field": "store_id", "order": "asc" }
+      ]
+    }
+  ]
 }

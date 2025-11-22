@@ -54,6 +54,7 @@
     >
       <block v-for="c in visibleList" :key="c._id">
         <view class="card" @tap="openDetail(c)" @longpress="onLongPress(c)">
+          <view class="badge new" v-if="isNewCustomer(c)">新客户</view>
           <view class="row-top">
             <image class="avatar" :src="c.avatar || defaultAvatar" mode="aspectFill"></image>
             <view class="base">
@@ -301,6 +302,16 @@ export default {
       } catch (e) {
         return n
       }
+    },
+    isNewCustomer(c) {
+      const ts = (typeof c.first_purchase_at === 'number')
+        ? c.first_purchase_at
+        : (c.first_purchase_at ? Date.parse(c.first_purchase_at) : null)
+      if (!ts || Number.isNaN(ts)) return false
+      const date = new Date(ts)
+      const now = new Date()
+      // 当年判定：同一自然年内均显示“新客户”标志
+      return date.getFullYear() === now.getFullYear()
     }
   }
 }
@@ -344,6 +355,12 @@ export default {
   background:#fff; border-radius:16px; padding:12px;
   box-shadow: 0 10px 24px rgba(0,0,0,.04);
   margin-top: 12px;
+  position: relative;
+}
+.badge.new {
+  position:absolute; right:10px; top:10px;
+  background:#ffefe0; color:#d16b00; border:1px solid #ffd4a8;
+  padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600;
 }
 .row-top { display:flex; align-items:center; }
 .avatar { width:48px; height:48px; border-radius:24px; background:#eee; }

@@ -56,10 +56,14 @@ export default async function () {
   }
   // #endif
 
-  // 3. 绑定clientDB错误事件
+  // 3. 绑定clientDB错误事件（若可用）
   // clientDB对象
-  const db = uniCloud.database()
-  db.on('error', onDBError)
+  const db = (typeof uniCloud !== 'undefined' && typeof uniCloud.database === 'function')
+    ? uniCloud.database()
+    : null
+  if (db && typeof db.on === 'function') {
+    db.on('error', onDBError)
+  }
   // clientDB的错误提示
   function onDBError ({
     code, // 错误码详见https://uniapp.dcloud.net.cn/uniCloud/clientdb?id=returnvalue
@@ -71,7 +75,7 @@ export default async function () {
   // db.off('error', onDBError)
 
   // 4. 同步客户端push_clientid至device表
-  if (uniCloud.onRefreshToken) {
+  if (typeof uniCloud !== 'undefined' && typeof uniCloud.onRefreshToken === 'function') {
     uniCloud.onRefreshToken(() => {
       // console.log('onRefreshToken');
       if (uni.getPushClientId) {

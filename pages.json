@@ -56,36 +56,6 @@
 			}
 		},
 		{
-			"path": "pages/bookings/create",
-			"style": {
-				"navigationBarTitleText": "新增预约"
-			}
-		},
-		{
-			"path": "pages/bookings/index",
-			"style": {
-				"navigationBarTitleText": "全部预约"
-			}
-		},
-		{
-			"path": "pages/appointments/next-week",
-			"style": {
-				"navigationBarTitleText": "本周预约"
-			}
-		},
-		{
-			"path": "pages/calendar/index",
-			"style": {
-				"navigationBarTitleText": "预约月历"
-			}
-		},
-		{
-			"path": "pages/analytics/analytics",
-			"style": {
-				"navigationBarTitleText": "月度经营分析"
-			}
-		},
-		{
 			"path": "pages/analytics/monthly-kpi",
 			"style": {
 				"navigationBarTitleText": "月度经营指标统计"
