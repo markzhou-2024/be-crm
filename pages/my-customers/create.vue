@@ -40,10 +40,7 @@
         <input class="input" v-model="form.city" placeholder="例：上海" />
       </view>
 
-      <view class="field">
-        <text class="label">备注</text>
-        <textarea class="textarea" v-model="form.notes" placeholder="可记录偏好、注意事项" />
-      </view>
+
     </scroll-view>
 
     <view class="actions">
@@ -182,7 +179,7 @@ export default {
 .label { display:block; font-size:13px; color:#9a9aa0; margin-bottom:6px; }
 .input { font-size:15px; color:#333; }
 .picker-trigger { font-size:15px; color:#333; min-height:22px; }
-.textarea { width:100%; min-height:96px; font-size:15px; color:#333; }
+.textarea { width:100%; min-height:48px; font-size:15px; color:#333; }
 .switch-field { display:flex; align-items:center; justify-content:space-between; }
 .actions { padding:12px 16px 24px; }
 .btn { height:46px; border-radius:24px; font-size:16px; }

@@ -1,65 +1,66 @@
-﻿<template>
+<template>
   <view class="page">
     <view class="overview-card">
       <view class="overview-text">
-        <text class="overview-title">月度经营指标统计</text>
+        <text class="overview-title">月度指标概览</text>
+        <view class="chips">
+        </view>
+        <view class="inline-filters">
+          <view class="filter-item" @tap="openMonthPicker">
+            <view class="filter-value picker-value">
+              <view class="filter-main">
+                <text class="filter-text">{{ selectedMonthDisplay }}</text>
+                <text class="filter-icon">📅</text>
+              </view>
+            </view>
+          </view>
+          <view class="filter-item">
+            <picker mode="selector" :range="storeLabels" @change="onStoreChange">
+              <view class="filter-value picker-value">
+                <view class="filter-main">
+                  <text class="filter-text">{{ selectedStoreLabel }}</text>
+                  <text class="filter-icon">▾</text>
+                </view>
+              </view>
+            </picker>
+          </view>
+        </view>
       </view>
       <view class="store-badge">
-        <text class="store-icon">🏬</text>
+        <text class="store-icon">🏪</text>
         <text class="store-text">{{ storeCountDisplay }}</text>
       </view>
     </view>
 
-    <view class="filter-card">
-      <view class="filter-item" @tap="openMonthPicker">
-        <view class="filter-label">统计月份</view>
-        <view class="filter-value">
-          <text>{{ selectedMonthDisplay }}</text>
-          <text class="filter-icon">⌄</text>
-        </view>
-      </view>
-      <view class="filter-item">
-        <view class="filter-label">门店范围</view>
-        <picker mode="selector" :range="storeLabels" @change="onStoreChange">
-          <view class="filter-value">
-            <text>{{ selectedStoreLabel }}</text>
-            <text class="filter-icon">⌄</text>
-          </view>
-        </picker>
-      </view>
-      <view class="filter-actions">
-        <button class="refresh-btn" :disabled="refreshing" @tap="refreshStats">
-          {{ refreshing ? '刷新中...' : '数据刷新' }}
-        </button>
-      </view>
-    </view>
-
     <view class="section" v-if="loaded">
-      <view class="section-title">门店数据</view>
+      <view class="section-head">
+        <text class="section-title">门店数据</text>
+        <text class="section-sub">到访与客群</text>
+      </view>
       <view class="cards">
         <view class="card blue">
-          <text class="card-label">到客服务次数（合计）</text>
+          <text class="card-label">客流到访数</text>
           <view class="card-number">
             <text>{{ metrics.shopStats.totalVisitors || 0 }}</text>
             <text class="card-unit">人</text>
           </view>
         </view>
         <view class="card green">
-          <text class="card-label">老客来店人次</text>
+          <text class="card-label">老客到访数</text>
           <view class="card-number">
             <text>{{ metrics.shopStats.oldCustomerVisitors || 0 }}</text>
             <text class="card-unit">人</text>
           </view>
         </view>
         <view class="card orange">
-          <text class="card-label">本月新客增加量</text>
+          <text class="card-label">新增客户数</text>
           <view class="card-number">
             <text>{{ metrics.shopStats.newCustomers || 0 }}</text>
             <text class="card-unit">人</text>
           </view>
         </view>
         <view class="card purple">
-          <text class="card-label">老客到店服务次数</text>
+          <text class="card-label">老客到店次数</text>
           <view class="card-number">
             <text>{{ metrics.shopStats.oldCustomerVisitTimes || 0 }}</text>
             <text class="card-unit">次</text>
@@ -69,10 +70,13 @@
     </view>
 
     <view class="section" v-if="loaded">
-      <view class="section-title">服务数据</view>
+      <view class="section-head">
+        <text class="section-title">服务数据</text>
+        <text class="section-sub">顾问与门店</text>
+      </view>
       <view class="cards">
         <view class="card indigo">
-          <text class="card-label">顾问到店次数</text>
+          <text class="card-label">顾问到访次数</text>
           <view class="card-number">
             <text>{{ metrics.serviceStats.consultantVisits || 0 }}</text>
             <text class="card-unit">次</text>
@@ -96,37 +100,47 @@
     </view>
 
     <view class="section" v-if="loaded">
-      <view class="section-title">财务数据</view>
+      <view class="section-head">
+        <text class="section-title">财务数据</text>
+        <text class="section-sub">销售与消耗</text>
+      </view>
       <view class="cards finance">
-        <view class="card gold wide">
-          <text class="card-label">本月销售金额</text>
-          <view class="card-number">
+        <view class="card gold finance-card">
+          <view class="finance-head">
+            <text class="card-label">本月销售金额</text>
+            <text class="pill pill-positive">销售</text>
+          </view>
+          <view class="card-number finance-number">
             <text>{{ formatCurrency(metrics.financeStats.monthSalesAmount) }}</text>
             <text class="card-unit">元</text>
           </view>
+          <text class="finance-note">包含本月收款、套餐销售</text>
         </view>
-        <view class="card gold wide">
-          <text class="card-label">本月消耗金额</text>
-          <view class="card-number">
+        <view class="card gold finance-card">
+          <view class="finance-head">
+            <text class="card-label">本月消耗金额</text>
+            <text class="pill pill-neutral">消耗</text>
+          </view>
+          <view class="card-number finance-number">
             <text>{{ formatCurrency(metrics.financeStats.monthConsumeAmount) }}</text>
             <text class="card-unit">元</text>
           </view>
+          <text class="finance-note">按套餐单价 × 消耗次数折算</text>
         </view>
       </view>
     </view>
 
     <view class="empty" v-if="!loaded">
-      请选择月份查询经营指标
+      请选择月份后查看经营指标
     </view>
 
-    <!-- 月份选择弹窗 -->
     <uni-popup ref="monthPopup" type="bottom">
       <view class="month-popup">
         <view class="popup-header">
           <text class="popup-title">选择月份</text>
           <view class="popup-year-control">
             <text class="year-btn" @tap="changePopupYear(-1)">‹</text>
-            <text class="year-text">{{ popupYear }}年</text>
+            <text class="year-text">{{ popupYear }} 年</text>
             <text class="year-btn" @tap="changePopupYear(1)">›</text>
           </view>
         </view>
@@ -202,6 +216,11 @@ export default {
     this.fetchStores()
     this.loadStats()
   },
+  onPullDownRefresh() {
+    this.refreshStats(true).finally(() => {
+      if (typeof uni.stopPullDownRefresh === 'function') uni.stopPullDownRefresh()
+    })
+  },
   methods: {
     openMonthPicker() {
       const [year] = (this.selectedMonth || '').split('-')
@@ -262,11 +281,11 @@ export default {
         uni.showToast({ title: err?.msg || err?.message || '加载失败', icon: 'none' })
       }
     },
-    async refreshStats() {
+    async refreshStats(force = false) {
       if (this.refreshing) return
       this.refreshing = true
       try {
-        await this.loadStats(true)
+        await this.loadStats(force || true)
         uni.showToast({ title: '已刷新', icon: 'success' })
       } catch (e) {
         uni.showToast({ title: e?.msg || e?.message || '刷新失败', icon: 'none' })
@@ -286,157 +305,194 @@ export default {
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #f3f4f6;
-  padding: 12px;
+  background: linear-gradient(180deg, #f6f8fb 0%, #ffffff 24%);
+  padding: 14px;
+  box-sizing: border-box;
 }
 
 .overview-card {
-  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
   border-radius: 20px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  align-items: flex-start;
+  box-shadow: 0 12px 36px rgba(14, 165, 233, 0.18);
+  color: #f8fafc;
+}
+.eyebrow {
+  font-size: 12px;
+  opacity: 0.8;
 }
 .overview-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2333;
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
 }
 .overview-desc {
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 13px;
-  color: rgba(148, 163, 184, 1);
+  opacity: 0.9;
+}
+.chips {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+.chip {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.chip.ghost {
+  background: rgba(255, 255, 255, 0.08);
 }
 .store-badge {
-  background: rgba(15, 23, 42, 0.88);
-  border-radius: 999px;
-  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
+  gap: 6px;
+  color: #fff;
 }
 .store-icon {
-  margin-right: 6px;
+  font-size: 16px;
 }
 .store-text {
-  color: #e5e7eb;
   font-size: 13px;
 }
 
-.filter-card {
-  margin-top: 12px;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.inline-filters {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
 }
 .filter-item {
-  flex: 1;
-}
-.filter-item + .filter-item {
-  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 200px;
 }
 .filter-label {
   font-size: 12px;
-  color: #9ca3af;
-  margin-bottom: 4px;
+  color: #6b7280;
 }
 .filter-value {
   background: #f9fafb;
-  border-radius: 999px;
-  padding: 6px 10px;
+  border-radius: 12px;
+  padding: 8px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+  font-size: 14px;
 }
 .filter-icon {
-  font-size: 12px;
+  font-size: 14px;
   color: #9ca3af;
 }
 
 .section {
-  margin-top: 16px;
+  margin-top: 18px;
 }
-.section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   margin-bottom: 8px;
 }
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+.section-sub {
+  font-size: 12px;
+  color: #9ca3af;
+}
 .cards {
-  display: flex;
-  flex-wrap: wrap;
-  margin: -4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 .card {
-  width: calc(50% - 8px);
-  margin: 4px;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 14px 12px;
   background: #ffffff;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  border-left: 4px solid transparent;
 }
 .card-label {
   font-size: 12px;
   color: #6b7280;
 }
 .card-number {
-  margin-top: 6px;
+  margin-top: 8px;
   display: flex;
   align-items: baseline;
+  gap: 6px;
 }
 .card-number text:first-child {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: #111827;
 }
 .card-unit {
-  margin-left: 4px;
   font-size: 12px;
   color: #9ca3af;
 }
 
-/* 颜色卡片 */
-.card.blue {
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-}
-.card.green {
-  background: linear-gradient(135deg, #ecfdf3, #dcfce7);
-}
-.card.orange {
-  background: linear-gradient(135deg, #fff7ed, #ffedd5);
-}
-.card.purple {
-  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
-}
-.card.indigo {
-  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-}
-.card.pink {
-  background: linear-gradient(135deg, #fdf2f8, #fce7f3);
-}
-.card.teal {
-  background: linear-gradient(135deg, #ecfeff, #ccfbf1);
-}
-.card.gold {
-  background: linear-gradient(135deg, #fef3c7, #fffbeb);
-}
+.card.blue { border-color: #60a5fa; background: linear-gradient(135deg, #eef4ff, #e1e9ff); }
+.card.green { border-color: #22c55e; background: linear-gradient(135deg, #ecfdf3, #dcfce7); }
+.card.orange { border-color: #f97316; background: linear-gradient(135deg, #fff7ed, #ffedd5); }
+.card.purple { border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff, #ede9fe); }
+.card.indigo { border-color: #6366f1; background: linear-gradient(135deg, #eef2ff, #e0e7ff); }
+.card.pink { border-color: #ec4899; background: linear-gradient(135deg, #fdf2f8, #fce7f3); }
+.card.teal { border-color: #14b8a6; background: linear-gradient(135deg, #ecfeff, #ccfbf1); }
+.card.gold { border-color: #f59e0b; background: linear-gradient(135deg, #fff7e6, #fff3c9); }
 
-.cards.finance .card.wide {
-  width: calc(100% - 8px);
+.cards.finance {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 12px;
 }
+.finance-card {
+  padding: 16px 14px;
+}
+.finance-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.finance-number text:first-child {
+  font-size: 24px;
+}
+.finance-note {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.pill {
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #fff;
+}
+.pill-positive { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.pill-neutral { background: linear-gradient(135deg, #f59e0b, #f97316); }
 
 .empty {
-  margin-top: 40px;
+  margin-top: 36px;
   text-align: center;
   color: #9ca3af;
   font-size: 14px;
 }
 
-/* 月份弹窗 */
 .month-popup {
   background: #ffffff;
   border-radius: 20px 20px 0 0;
@@ -449,41 +505,45 @@ export default {
 }
 .popup-title {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
 }
 .popup-year-control {
   display: flex;
   align-items: center;
+  gap: 6px;
 }
 .year-btn {
   width: 32px;
   text-align: center;
   font-size: 18px;
+  color: #111827;
 }
 .year-text {
-  margin: 0 8px;
   font-size: 14px;
+  color: #374151;
 }
 .month-grid {
   margin-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
 }
 .month-cell {
-  width: 25%;
-  margin-bottom: 12px;
   border-radius: 12px;
   padding: 12px 0;
   text-align: center;
   color: #475569;
   font-size: 15px;
+  background: #f8fafc;
+  border: 1px solid transparent;
 }
 .month-cell.active {
   background: #1d4ed8;
   color: #fff;
+  border-color: #1d4ed8;
 }
 .popup-footer {
-  margin-top: 8px;
+  margin-top: 10px;
   text-align: right;
 }
 .popup-btn {

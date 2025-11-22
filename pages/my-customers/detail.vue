@@ -66,7 +66,10 @@
             <view class="consume-row">
               <view>
                 <view class="consume-title">{{ item.product_name || item.package_name || '项目' }}</view>
-                <view class="consume-meta">{{ formatConsumeDate(item.consume_date || item.consumed_at || item.service_date) }} · 消耗{{ item.count || item.service_times || 0 }}次</view>
+                <view class="consume-meta">
+                  {{ formatConsumeDate(item.consume_date || item.consumed_at || item.service_date) }} · 次数{{ item.count || item.service_times || 0 }}次
+                  <text class="service-tag" :class="{ store: isStoreService(item) }">{{ renderServiceRole(item) }}</text>
+                </view>
               </view>
               <text class="consume-remaining">{{ renderRemaining(item._remaining) }}</text>
             </view>
@@ -349,6 +352,14 @@ export default {
       }
       return `剩余${value}次`
     },
+    isStoreService(record) {
+      if (!record) return false
+      if (record.store_service !== undefined) return !!record.store_service
+      return record.operator_role === 'store'
+    },
+    renderServiceRole(record) {
+      return this.isStoreService(record) ? '店家服务' : '顾问服务'
+    },
     updateStatsState(stats) {
       const safeStats = stats || { total_spend: 0, visit_count: 0 }
       this.stats = safeStats
@@ -414,6 +425,8 @@ export default {
 .consume-title { font-size:15px; font-weight:600; color:#333; }
 .consume-meta { margin-top:6px; font-size:12px; color:#999; }
 .consume-remaining { font-size:13px; color:#caa265; white-space:nowrap; }
+.service-tag { margin-left:8px; padding:2px 6px; border-radius:10px; background:#eef2ff; color:#4f46e5; }
+.service-tag.store { background:#e8fff3; color:#0f9d58; }
 .purchase-sub { margin-top:8px; font-size:12px; color:#9a9aa0; }
 .record-remark { margin-top:4px; font-size:12px; color:#9a9aa0; }
 .placeholder-title { font-size:14px; color:#333; font-weight:600; }

@@ -510,11 +510,11 @@ export default {
 .form-field:last-of-type { margin-bottom:18px; }
 .field-label { font-size:13px; color:#6f6f73; margin-bottom:4px; display:block; }
 .field-value { font-size:15px; color:#1c1c1e; }
-.field-input, .field-textarea { display:block; width:100%; border:1px solid #dedfe3; border-radius:16px; padding:12px; font-size:14px; box-sizing:border-box; background:#fff; color:#1c1c1e; }
+.field-input, .field-textarea { display:block; width:88%; margin:0 auto; border:1px solid #dedfe3; border-radius:16px; padding:12px; font-size:14px; box-sizing:border-box; background:#fff; color:#1c1c1e; }
 .field-input { height:44px; line-height:20px; }
 .field-input::placeholder { color:#a4a6ad; }
-.field-textarea { min-height:80px; line-height:1.4; }
-.picker-value { width:100%; border:1px solid #dedfe3; border-radius:16px; padding:12px; font-size:14px; color:#1c1c1e; background:#fff; }
+.field-textarea { min-height:40px; line-height:1.4; }
+.picker-value { width:88%; margin:0 auto; border:1px solid #dedfe3; border-radius:14px; padding:10px 12px; font-size:14px; color:#1c1c1e; background:#fff; box-sizing:border-box; }
 .form-actions { display:flex; gap:12px; }
 .form-actions button { flex:1; border:none; border-radius:22px; padding:12px 0; font-size:15px; }
 .form-actions .ghost { background:#f5f5f5; color:#1c1c1e; }

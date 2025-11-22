@@ -38,11 +38,13 @@
         class="card"
         @tap="openDetail(item)"
       >
-        <image class="cover" :src="item.cover_image" mode="aspectFill" />
+        <image class="cover" :src="item.cover_image || defaultCover" mode="aspectFill" />
         <view class="info">
           <view class="name-row">
             <text class="name">{{ item.store_name }}</text>
-            <text class="arrow">></text>
+            <text class="arrow">›</text>
+          </view>
+          <view class="tag-row">
           </view>
           <view class="addr-row">
             <text class="addr">📍 {{ item.store_address }}</text>
@@ -50,12 +52,12 @@
           <view class="stat-row">
             <view class="stat">
               <text class="symbol">￥</text>
-              <text class="value">{{ formatMoney(item.month_revenue) }}</text>
-              <text class="label"> 上月营收</text>
+              <text class="value">{{ formatCurrency(item.month_sales_amount ?? item.last_month_revenue ?? item.month_revenue) }}</text>
+              <text class="label"> 本月销售金额</text>
             </view>
             <view class="stat">
               <text class="symbol">👥</text>
-              <text class="value">{{ item.customer_count }}</text>
+              <text class="value">{{ item.last_month_customers || 0 }}</text>
               <text class="label"> 客户数</text>
             </view>
           </view>
@@ -68,13 +70,17 @@
     </scroll-view>
 
     <!-- 右下角新增门店悬浮按钮 -->
-    <view class="fab" @tap="goCreate">＋</view>
+    <view class="fab" @tap="goCreate">
+      <image class="fab-img" src="/static/tabbar/新增.png" mode="aspectFit" />
+    </view>
   </view>
 </template>
 
 <!-- 重要：不要用 <script setup>，不加 lang="ts" -->
 <script>
 // @ts-nocheck
+import { fetchCustomers } from '@/api/customers.js'
+
 export default {
   data() {
     return {
@@ -88,7 +94,8 @@ export default {
       pageSize: 10,
       list: [],
       loading: false,
-      error: ''
+      error: '',
+      defaultCover: 'https://dummyimage.com/600x400/f3f4f6/9ca3af&text=Store'
     }
   },
   created() {
@@ -128,7 +135,8 @@ export default {
       try {
         const data = await this.service.listMyShops()
         const list = Array.isArray(data) ? data : (data && data.data) || []
-        this.list = list
+        const withCustomers = await this.attachCustomerCounts(list)
+        this.list = await this.attachMonthSales(withCustomers)
         this.page = 1
       } catch (err) {
         this.list = []
@@ -159,36 +167,79 @@ export default {
     formatMoney(n) {
       if (typeof n !== 'number') return n
       return n.toLocaleString('zh-CN')
+    },
+    formatCurrency(n) {
+      const num = Number(n || 0)
+      if (!num) return '0.00'
+      return num.toFixed(2)
+    },
+    async attachCustomerCounts(list) {
+      try {
+        const customers = await fetchCustomers()
+        const countMap = {}
+        ;(customers || []).forEach(c => {
+          const sid = c.store_id || ''
+          if (!sid) return
+          countMap[sid] = (countMap[sid] || 0) + 1
+        })
+        return list.map(item => ({
+          ...item,
+          last_month_customers: countMap[item._id] || item.last_month_customers || item.customer_count || 0
+        }))
+      } catch (e) {
+        return list
+      }
+    },
+    async attachMonthSales(list) {
+      const stats = uniCloud.importObject('stats')
+      const now = new Date()
+      const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      const tasks = list.map(async item => {
+        try {
+          const res = await stats.getMonthlyBusinessKpis({ month, storeId: item._id })
+          const val = res?.data?.financeStats?.monthSalesAmount
+          return { ...item, month_sales_amount: Number(val || 0) }
+        } catch (e) {
+          return { ...item, month_sales_amount: item.month_sales_amount || 0 }
+        }
+      })
+      return Promise.all(tasks)
     }
   }
 }
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f6f7f9; padding: 16px 16px 0; box-sizing: border-box; }
+.page { min-height: 100vh; background: linear-gradient(180deg,#f5f7fb 0%,#ffffff 24%); padding: 16px 16px 0; box-sizing: border-box; }
 .page-header { padding-top: 8px; padding-bottom: 8px; }
-.title { font-size: 20px; font-weight: 600; color: #222; }
+.title { font-size: 20px; font-weight: 700; color: #222; }
 .search-bar { margin: 8px 0; }
 .search-input { width:100%; height:40px; background:#fff; border-radius:12px; padding:0 14px; box-sizing:border-box; font-size:14px; color:#333; box-shadow:0 1px 2px rgba(0,0,0,0.04);}
 .tabs { display:flex; gap:10px; margin:10px 0 12px; }
-.tab { padding: 8px 14px; border-radius: 20px; background:#fff; font-size:14px; color:#6c6c6c; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+.tab { padding: 8px 14px; border-radius: 20px; background:#fff; font-size:14px; color:#6c6c6c; box-shadow:0 3px 10px rgba(0,0,0,0.06); border:1px solid #f0f1f3; }
 .tab.active { background:#e8d7be; color:#5a3e16; font-weight:600; }
 .list { height: calc(100vh - 160px); }
-.card { display:flex; gap:12px; background:#fff; border-radius:16px; padding:12px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.04); }
+.card { display:flex; gap:12px; background:#fff; border-radius:16px; padding:12px; margin-bottom:12px; box-shadow:0 10px 24px rgba(0,0,0,0.06); border:1px solid #f1f2f4; }
 .cover { width:84px; height:84px; border-radius:12px; background:#f2f2f2; }
 .info { flex:1; min-width:0; }
 .name-row { display:flex; align-items:center; justify-content:space-between; }
-.name { font-size:16px; font-weight:600; color:#222; max-width:80%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.arrow { font-size:18px; line-height:1; color:#b8b8b8; }
+.name { font-size:16px; font-weight:700; color:#222; max-width:80%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.arrow { font-size:18px; line-height:1; color:#c0c4cc; }
+.tag-row { margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; }
+.pill { padding:2px 8px; border-radius:10px; background:#f3f4f6; color:#5b6473; font-size:11px; }
+.pill.ghost { background:#e8f5e9; color:#1b5e20; }
 .addr-row { margin-top:4px; }
 .addr { font-size:12px; color:#8a8a8a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.stat-row { margin-top:8px; display:flex; gap:14px; }
-.stat .symbol { font-size:12px; color:#b08a47; margin-right:2px; }
-.stat .value { font-size:14px; font-weight:600; color:#333; margin-right:4px; }
-.stat .label { font-size:12px; color:#8a8a8a; }
+.stat-row { margin-top:10px; display:flex; gap:16px; }
+.stat { flex:1; display:flex; align-items:baseline; gap:4px; }
+.stat .symbol { font-size:12px; color:#b08a47; }
+.stat .value { font-size:15px; font-weight:700; color:#333; }
+.stat .label { font-size:12px; color:#8a8a8a; white-space:nowrap; }
+.loading, .empty { color:#8a8a8a; }
 .loading { text-align:center; color:#777; padding:16px 0; }
 .empty { text-align:center; color:#999; padding:24px 0 64px; }
 
 /* 悬浮新增按钮 */
-.fab { position: fixed; right: 16px; bottom: 88px; width: 52px; height: 52px; border-radius: 26px; background: #caa265; color: #fff; font-size: 28px; display:flex; align-items:center; justify-content:center; box-shadow: 0 8px 16px rgba(0,0,0,.15); z-index: 10; }
+.fab { position: fixed; right: 16px; bottom: 32px; min-width: 18px; height: 40px; border-radius: 20px; padding: 0; background: rgba(255,255,255,0.12); color: #fff; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow: 0 10px 24px rgba(0,0,0,.12); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.35); z-index: 10; }
+.fab-img { width: 18px; height: 18px; }
 </style>

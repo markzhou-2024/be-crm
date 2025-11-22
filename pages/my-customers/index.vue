@@ -9,7 +9,7 @@
           <input
             class="search-input"
             v-model="keyword"
-            placeholder="姓名或手机号搜索"
+            placeholder="姓名搜索"
             placeholder-style="color:#b9b9bd"
             confirm-type="search"
             @confirm="applyFilter(true)"
@@ -62,10 +62,6 @@
                 <text>{{ c.name }}</text>
                 <text v-if="c.is_vip" class="vip">VIP</text>
               </view>
-              <view class="phone">
-                <text class="phone-icon">📞</text>
-                <text>{{ maskPhone(c.phone) }}</text>
-              </view>
               <view class="store" v-if="c.store_name">
                 <text class="store-icon">🏬</text>
                 <text>{{ c.store_name }}</text>
@@ -78,7 +74,7 @@
             <view class="meta">
               <text class="meta-icon">🕒</text>
               <text class="meta-gray">上次到店</text>
-              <text class="meta-strong">{{ c.last_visit_label || '-' }}</text>
+              <text class="meta-strong">{{ formatDate(c.last_visit_at) || '-' }}</text>
             </view>
             <view class="spend">
               <text class="meta-icon gold">￥</text>
@@ -96,13 +92,17 @@
       <view v-else-if="!hasMore && visibleList.length" class="loading end">已到底</view>
     </scroll-view>
 
-    <view class="fab" @tap="goCreate">＋</view>
+    <view class="fab" @tap="goCreate">
+      <image class="fab-img" src="/static/tabbar/新增.png" mode="aspectFit" />
+      <text class="fab-text">新增客户</text>
+    </view>
   </view>
 </template>
 
 <script>
 // @ts-nocheck
 import { fetchCustomers, deleteCustomer as deleteCustomerApi } from '@/api/customers.js'
+import { listPurchases } from '@/api/purchases.js'
 import { filterByStoreId } from '@/utils/customersStore.js'
 import { fetchShops } from '@/api/shops.js'
 
@@ -135,6 +135,7 @@ export default {
     this.initShops()
   },
   onShow() {
+    this.applyStoredShopFilter()
     this.initShops()
     this.initData()
   },
@@ -163,6 +164,15 @@ export default {
       }
       this.syncShopPicker()
     },
+    applyStoredShopFilter() {
+      try {
+        const stored = uni.getStorageSync('customer_store_filter')
+        if (stored && stored.store_id) {
+          this.activeShopId = stored.store_id
+          uni.removeStorageSync('customer_store_filter')
+        }
+      } catch (e) {}
+    },
     syncShopPicker() {
       const options = this.shopPickerOptions || []
       const idx = options.findIndex(opt => opt.value === this.activeShopId)
@@ -180,8 +190,9 @@ export default {
       this.loading = true
       try {
         const list = await fetchCustomers()
-        this.decorate(list)
-        this.list = list
+        const withSpend = await this.attachTotalSpend(list)
+        this.decorate(withSpend)
+        this.list = withSpend
         this.applyFilter(true)
       } catch (err) {
         uni.showToast({ title: err?.errMsg || err?.message || '加载失败', icon: 'none' })
@@ -231,8 +242,7 @@ export default {
       if (kw) {
         list = list.filter(item => {
           const name = item.name || ''
-          const phone = item.phone || ''
-          return name.indexOf(kw) >= 0 || phone.indexOf(kw) >= 0
+          return name.indexOf(kw) >= 0
         })
       }
       list = filterByStoreId(list, this.activeShopId)
@@ -246,6 +256,19 @@ export default {
         this.hasMore = false
       }
     },
+    async attachTotalSpend(list) {
+      const mapped = list || []
+      const tasks = mapped.map(async c => {
+        try {
+          const purchases = await listPurchases(c._id || c.id)
+          const sum = (purchases || []).reduce((acc, cur) => acc + Number(cur.amount || 0), 0)
+          return { ...c, total_spend: sum }
+        } catch (e) {
+          return c
+        }
+      })
+      return Promise.all(tasks)
+    },
     loadMore() {
       if (!this.hasMore || this.loading) return
       if (this.visibleList.length >= this.filtered.length) return
@@ -254,6 +277,14 @@ export default {
       if (this.visibleList.length >= this.filtered.length) {
         this.hasMore = false
       }
+    },
+    formatDate(value) {
+      if (!value) return ''
+      const d = new Date(value)
+      if (Number.isNaN(d.getTime())) return ''
+      const m = `${d.getMonth() + 1}`.padStart(2, '0')
+      const day = `${d.getDate()}`.padStart(2, '0')
+      return `${d.getFullYear()}-${m}-${day}`
     },
     goCreate() {
       uni.navigateTo({ url: '/pages/my-customers/create' })
@@ -318,15 +349,15 @@ export default {
 </script>
 
 <style scoped>
-.page { min-height: 100vh; background: #f6f7f9; }
+.page { min-height: 100vh; background: linear-gradient(180deg,#f5f7fb 0%,#ffffff 24%); }
 .header {
   background: #fff;
   border-radius: 24px;
   margin: 12px 12px 8px;
   padding: 16px 16px 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.04);
+  box-shadow: 0 10px 28px rgba(0,0,0,.06);
 }
-.title { font-size: 18px; color:#222; font-weight:600; margin-bottom: 12px; }
+.title { font-size: 20px; color:#222; font-weight:700; margin-bottom: 12px; }
 .search-row { display:flex; align-items:center; gap:10px; }
 .search {
   flex:1;
@@ -339,7 +370,7 @@ export default {
 .shop-picker { width: 140px; }
 .shop-picker-field {
   height: 40px; border-radius: 14px; background:#f5f5f7;
-  padding: 0 12px; display:flex; align-items:center; justify-content:space-between;
+  padding: 0 12px; display:flex; align-items:center; justify-content:space-between; border:1px solid #eef0f4;
 }
 .shop-picker-text { font-size:13px; color:#555; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .picker-arrow { color:#a5a5ab; font-size:12px; margin-left:8px; }
@@ -347,13 +378,13 @@ export default {
 .tab {
   display:inline-flex; align-items:center; justify-content:center;
   height:34px; padding:0 14px; margin-right:10px;
-  border-radius:17px; background:#f6f7f9; color:#666; font-size:13px;
+  border-radius:17px; background:#f6f7f9; color:#666; font-size:13px; box-shadow:0 3px 10px rgba(0,0,0,0.06); border:1px solid #f0f1f3;
 }
 .tab.active { background:#d9c19a; color:#fff; font-weight:600; }
 .list { height: calc(100vh - 220px); padding: 0 12px 16px; box-sizing: border-box; }
 .card {
   background:#fff; border-radius:16px; padding:12px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.04);
+  box-shadow: 0 10px 24px rgba(0,0,0,.06);
   margin-top: 12px;
   position: relative;
 }
@@ -390,10 +421,18 @@ export default {
 .loading.end { color:#c0c2c7; }
 
 .fab {
-  position: fixed; right: 16px; bottom: 88px;
-  width: 52px; height: 52px; border-radius: 26px;
-  background: #caa265; color: #fff; font-size: 28px;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow: 0 8px 16px rgba(0,0,0,.15); z-index: 10;
+  position: fixed; right: 16px; bottom: 32px;
+  min-width: 18px; height: 40px; border-radius: 20px;
+  padding: 0;
+  background: rgba(255,255,255,0.12);
+  color: #fff; font-size: 12px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.35);
+  z-index: 10;
 }
+.fab-icon { display:none; }
+.fab-img { width: 18px; height: 18px; }
+.fab-text { display:none; }
 </style>

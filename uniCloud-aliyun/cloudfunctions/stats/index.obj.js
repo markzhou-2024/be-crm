@@ -6,6 +6,7 @@ const dbCmd = db.command
 
 // 缓存集合与字段对齐 schema: stats_monthly_kpi
 const KPI_COLL = 'stats_monthly_kpi'
+const CURRENT_KPI_VERSION = 3
 
 // 计算某月份的时间范围（13 位时间戳）
 function parseMonthRange (month) {
@@ -182,8 +183,10 @@ async function recalcMonthlyBusinessKpis ({ user_id, month, store_id = '' }) {
 
   for (const c of consumes) {
     const cnt = Number(c.count || 0)
-    if (c.operator_role === 'consultant') consultantServices += cnt
-    else if (c.operator_role === 'store') storeSelfServices += cnt
+    // 兼容老数据 operator_role 与现有的 store_service 标记
+    const role = c.operator_role || (c.store_service ? 'store' : 'consultant')
+    if (role === 'store') storeSelfServices += cnt
+    else consultantServices += cnt
   }
 
   const consultantVisits = bookings.length
@@ -206,8 +209,27 @@ async function recalcMonthlyBusinessKpis ({ user_id, month, store_id = '' }) {
   let monthSalesAmount = 0
   for (const b of buys) monthSalesAmount += Number(b.amount || 0)
 
+  // 计算消耗金额：按购买单价 * 消耗次数，避免消费记录缺少金额字段导致统计为 0
+  const buyMap = new Map()
+  for (const b of buys) {
+    if (!b || !b._id) continue
+    buyMap.set(b._id, {
+      amount: Number(b.amount || 0),
+      serviceTimes: Number(b.service_times || 0)
+    })
+  }
   let monthConsumeAmount = 0
-  for (const c of consumes) monthConsumeAmount += Number(c.amount || 0)
+  for (const c of consumes) {
+    const cnt = Number(c.count || 0)
+    const buyInfo = c.buy_id && buyMap.get(c.buy_id)
+    if (buyInfo && buyInfo.serviceTimes > 0) {
+      const unitPrice = buyInfo.amount / buyInfo.serviceTimes
+      monthConsumeAmount += unitPrice * cnt
+    } else {
+      // 兜底：若无法找到对应购买记录或次数为 0，则仅累加计数，金额置 0
+      monthConsumeAmount += 0
+    }
+  }
 
   const totalConsumeAmount = monthConsumeAmount
   const packageUnitPrice = totalVisitors > 0
@@ -363,8 +385,10 @@ module.exports = {
       .get()
 
     const doc = (cacheRes.data && cacheRes.data[0]) || null
+    const cacheVersion = Number(doc && doc.calc_version) || 0
+    const useCache = doc && !force && cacheVersion >= CURRENT_KPI_VERSION
 
-    if (doc && !force) {
+    if (useCache) {
       return {
         code: 0,
         msg: 'success',
@@ -391,7 +415,7 @@ module.exports = {
         shop_stats: shopStats,
         service_stats: serviceStats,
         finance_stats: financeStats,
-        calc_version: 1,
+        calc_version: CURRENT_KPI_VERSION,
         update_time: nowTs
       })
     } else {
@@ -404,7 +428,7 @@ module.exports = {
         shop_stats: shopStats,
         service_stats: serviceStats,
         finance_stats: financeStats,
-        calc_version: 1,
+        calc_version: CURRENT_KPI_VERSION,
         create_time: nowTs,
         update_time: nowTs
       })
@@ -457,7 +481,7 @@ module.exports = {
         shop_stats: shopStats,
         service_stats: serviceStats,
         finance_stats: financeStats,
-        calc_version: 1,
+        calc_version: CURRENT_KPI_VERSION,
         update_time: nowTs
       })
     } else {
@@ -470,7 +494,7 @@ module.exports = {
         shop_stats: shopStats,
         service_stats: serviceStats,
         finance_stats: financeStats,
-        calc_version: 1,
+        calc_version: CURRENT_KPI_VERSION,
         create_time: nowTs,
         update_time: nowTs
       })

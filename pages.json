@@ -58,7 +58,9 @@
 		{
 			"path": "pages/analytics/monthly-kpi",
 			"style": {
-				"navigationBarTitleText": "月度经营指标统计"
+				"navigationBarTitleText": "月度经营指标统计",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
 			}
 		},
 		{
