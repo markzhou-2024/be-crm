@@ -1,10 +1,10 @@
 <template>
   <view class="page">
-    <view class="overview-card">
-      <view class="overview-text">
-        <text class="overview-title">月度指标概览</text>
-        <view class="chips">
-        </view>
+  <view class="overview-card">
+    <view class="overview-text">
+      <text class="overview-title">月度指标概览</text>
+      <view class="chips">
+      </view>
         <view class="inline-filters">
           <view class="filter-item" @tap="openMonthPicker">
             <view class="filter-value picker-value">
@@ -25,12 +25,23 @@
             </picker>
           </view>
         </view>
-      </view>
-      <view class="store-badge">
-        <text class="store-icon">🏪</text>
-        <text class="store-text">{{ storeCountDisplay }}</text>
+    </view>
+    <view class="store-badge">
+      <text class="store-icon">🏪</text>
+      <text class="store-text">{{ storeCountDisplay }}</text>
+    </view>
+  </view>
+
+  <view class="assistant-entry" @tap="goToAiAssistant">
+    <view class="assistant-left">
+      <view class="assistant-icon">🤖</view>
+      <view class="assistant-texts">
+        <text class="assistant-title">AI 经营分析师</text>
+        <text class="assistant-sub">用自然语言获取经营洞察</text>
       </view>
     </view>
+    <view class="assistant-action">立即咨询</view>
+  </view>
 
     <view class="section" v-if="loaded">
       <view class="section-head">
@@ -297,6 +308,9 @@ export default {
       const num = Number(value || 0)
       if (!num) return '0.00'
       return num.toFixed(2)
+    },
+    goToAiAssistant() {
+      uni.navigateTo({ url: '/pages/analytics/chat-bi' })
     }
   }
 }
@@ -319,6 +333,52 @@ export default {
   align-items: flex-start;
   box-shadow: 0 12px 36px rgba(14, 165, 233, 0.18);
   color: #f8fafc;
+}
+.assistant-entry {
+  margin-top: 12px;
+  background: #f0f7ff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #e0e7ff;
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.08);
+}
+.assistant-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.assistant-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4f46e5, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+}
+.assistant-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.assistant-title {
+  font-size: 16px;
+  color: #111827;
+  font-weight: 700;
+}
+.assistant-sub {
+  font-size: 13px;
+  color: #4b5563;
+}
+.assistant-action {
+  color: #4338ca;
+  font-size: 14px;
+  font-weight: 600;
 }
 .eyebrow {
   font-size: 12px;
