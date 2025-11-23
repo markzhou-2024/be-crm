@@ -55,19 +55,26 @@
 				"navigationBarTitleText": "编辑产品"
 			}
 		},
-		{
-			"path": "pages/analytics/monthly-kpi",
-			"style": {
-				"navigationBarTitleText": "月度经营指标统计",
-				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark"
-			}
-		},
-		{
-			"path": "pages/my-shops/index",
-			"style": {
-				"navigationBarTitleText": "负责的店"
-			}
+                {
+                        "path": "pages/analytics/monthly-kpi",
+                        "style": {
+                                "navigationBarTitleText": "月度经营指标统计",
+                                "enablePullDownRefresh": true,
+                                "backgroundTextStyle": "dark"
+                        }
+                },
+                {
+                        "path": "pages/analytics/chat-bi",
+                        "style": {
+                                "navigationBarTitleText": "AI 分析师",
+                                "enablePullDownRefresh": false
+                        }
+                },
+                {
+                        "path": "pages/my-shops/index",
+                        "style": {
+                                "navigationBarTitleText": "负责的店"
+                        }
 		},
 		{
 			"path": "uni_modules/uni-id-pages/pages/userinfo/deactivate/deactivate",
