@@ -134,6 +134,15 @@
       请选择月份后查看经营指标
     </view>
 
+    <view class="ai-entry" @tap="goAiAnalyst">
+      <view class="ai-icon">🤖</view>
+      <view class="ai-copy">
+        <text class="ai-title">AI 经营分析师</text>
+        <text class="ai-desc">用数据回答你的问题</text>
+      </view>
+      <text class="ai-arrow">›</text>
+    </view>
+
     <uni-popup ref="monthPopup" type="bottom">
       <view class="month-popup">
         <view class="popup-header">
@@ -292,6 +301,9 @@ export default {
       } finally {
         this.refreshing = false
       }
+    },
+    goAiAnalyst () {
+      uni.navigateTo({ url: '/pages/analytics/chat-bi' })
     },
     formatCurrency(value) {
       const num = Number(value || 0)
@@ -549,5 +561,54 @@ export default {
 .popup-btn {
   color: #2563eb;
   font-size: 14px;
+}
+
+.ai-entry {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.25);
+  z-index: 10;
+}
+
+.ai-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.ai-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.ai-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ai-desc {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.ai-arrow {
+  font-size: 22px;
+  opacity: 0.9;
 }
 </style>
